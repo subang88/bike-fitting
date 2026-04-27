@@ -491,12 +491,177 @@
       display: none;
     }
 
+    /* ── FIELD WRAP (inline + 설명) ── */
+    .field-wrap { display: flex; flex-direction: column; gap: 5px; }
+    .fi-desc { font-size: 0.72rem; color: var(--text3); padding-left: 4px; }
+    .field-inline .fi-label { min-width: 0; white-space: nowrap; gap: 6px; }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      position: sticky; top: 0; z-index: 200;
+      background: rgba(11,14,26,0.96);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 24px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .topbar-brand { font-size: 0.85rem; font-weight: 700; color: var(--text2); }
+    .profile-area { position: relative; }
+    .profile-btn {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 14px;
+      color: var(--text); font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; transition: border-color 0.2s;
+    }
+    .profile-btn:hover { border-color: var(--accent); }
+    .profile-btn .avatar {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; color: #fff; font-weight: 700;
+    }
+    .profile-menu {
+      display: none; position: absolute; top: calc(100% + 8px); right: 0;
+      background: #1a2040; border: 1px solid var(--border);
+      border-radius: 10px; min-width: 200px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5); overflow: hidden; z-index: 300;
+    }
+    .profile-menu.open { display: block; }
+    .pm-header {
+      padding: 12px 16px; font-size: 0.78rem; color: var(--text2);
+      border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.03);
+    }
+    .pm-item {
+      padding: 10px 16px; font-size: 0.84rem; color: var(--text);
+      cursor: pointer; display: flex; align-items: center; gap: 8px;
+      transition: background 0.15s;
+    }
+    .pm-item:hover { background: rgba(79,156,249,0.08); }
+    .pm-item.danger { color: var(--red); }
+    .pm-item.active { color: var(--accent); font-weight: 600; }
+    .pm-divider { height: 1px; background: var(--border); margin: 4px 0; }
+    .pm-sub { font-size: 0.75rem; color: var(--text3); margin-left: auto; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+      z-index: 500; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #131929; border: 1px solid var(--border);
+      border-radius: 14px; width: 90%; max-width: 480px;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    }
+    .modal-head {
+      padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal-head h3 { font-size: 1rem; font-weight: 700; }
+    .modal-close {
+      background: none; border: none; color: var(--text2);
+      font-size: 1.3rem; cursor: pointer; padding: 2px 6px; border-radius: 4px;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.08); }
+    .modal-body { padding: 20px 24px; }
+    .modal-footer {
+      padding: 16px 24px; border-top: 1px solid var(--border);
+      display: flex; gap: 10px; justify-content: flex-end;
+    }
+    .m-input {
+      width: 100%; background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 14px; color: var(--text);
+      font-size: 0.9rem; outline: none; margin-bottom: 12px;
+      transition: border-color 0.2s;
+    }
+    .m-input:focus { border-color: var(--accent); }
+    .m-input::placeholder { color: var(--text3); }
+    .m-label { font-size: 0.8rem; color: var(--text2); margin-bottom: 6px; display: block; font-weight: 600; }
+    .m-btn {
+      padding: 10px 20px; border-radius: 8px; border: none;
+      font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s;
+    }
+    .m-btn:hover { opacity: 0.88; }
+    .m-btn.primary { background: linear-gradient(135deg, #1a6fd4, #0097b2); color: #fff; }
+    .m-btn.secondary { background: var(--card); border: 1px solid var(--border); color: var(--text2); }
+    .m-btn.danger { background: rgba(231,76,60,0.15); border: 1px solid rgba(231,76,60,0.3); color: var(--red); }
+    .m-err { font-size: 0.8rem; color: var(--red); margin-bottom: 10px; display: none; }
+
+    /* ── SAVE BAR ── */
+    .save-bar {
+      display: none; background: var(--bg2);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 16px 20px; margin-bottom: 24px;
+      align-items: center; gap: 12px;
+    }
+    .save-bar.show { display: flex; }
+    .save-bar input {
+      flex: 1; background: var(--card); border: 1px solid var(--border);
+      border-radius: 7px; padding: 9px 14px; color: var(--text);
+      font-size: 0.88rem; outline: none;
+    }
+    .save-bar input:focus { border-color: var(--accent); }
+    .save-bar input::placeholder { color: var(--text3); }
+    .save-bar-btn {
+      padding: 9px 18px; background: linear-gradient(135deg,#1a6fd4,#0097b2);
+      border: none; border-radius: 7px; color: #fff;
+      font-size: 0.85rem; font-weight: 700; cursor: pointer; white-space: nowrap;
+    }
+    .save-bar-btn:hover { opacity: 0.88; }
+    .save-notice { font-size: 0.78rem; color: var(--text3); }
+
+    /* ── HISTORY LIST ── */
+    .hist-empty { color: var(--text3); font-size: 0.88rem; text-align: center; padding: 24px 0; }
+    .hist-item {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 16px; margin-bottom: 10px;
+      cursor: pointer; transition: border-color 0.2s, background 0.2s;
+    }
+    .hist-item:hover { border-color: var(--accent); background: rgba(79,156,249,0.05); }
+    .hist-item-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .hist-label { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+    .hist-date { font-size: 0.75rem; color: var(--text3); }
+    .hist-stats { display: flex; gap: 12px; flex-wrap: wrap; }
+    .hist-stat { font-size: 0.75rem; color: var(--text2); }
+    .hist-stat strong { color: var(--accent); }
+    .hist-del {
+      background: none; border: none; color: var(--text3);
+      font-size: 0.75rem; cursor: pointer; padding: 2px 6px;
+      border-radius: 4px; margin-left: 8px;
+    }
+    .hist-del:hover { color: var(--red); background: rgba(231,76,60,0.1); }
+
+    /* ── PROFILE LIST ── */
+    .prof-item {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px 14px; margin-bottom: 8px;
+      cursor: pointer; transition: border-color 0.2s;
+    }
+    .prof-item:hover { border-color: var(--accent); }
+    .prof-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; color: #fff; font-weight: 700; flex-shrink: 0;
+    }
+    .prof-info { flex: 1; }
+    .prof-name { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+    .prof-meta { font-size: 0.75rem; color: var(--text3); }
+    .prof-del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 0.8rem; padding: 4px; }
+    .prof-del:hover { color: var(--red); }
+    .prof-divider { font-size: 0.75rem; color: var(--text3); margin: 16px 0 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
     @media (max-width: 600px) {
       header h1 { font-size: 1.5rem; }
       .container { padding: 24px 14px 60px; }
       .form-section { padding: 20px 16px 16px; }
       .form-grid, .form-grid-2 { grid-template-columns: 1fr 1fr; }
       .results-grid { grid-template-columns: 1fr 1fr; }
+      .save-bar { flex-direction: column; align-items: stretch; }
     }
     @media (max-width: 420px) {
       .form-grid, .form-grid-2 { grid-template-columns: 1fr; }
@@ -505,6 +670,19 @@
   </style>
 </head>
 <body>
+
+<!-- 상단 고정 바 -->
+<nav class="topbar">
+  <span class="topbar-brand">🚴 BikeFit</span>
+  <div class="profile-area" id="profileArea">
+    <button class="profile-btn" id="profileBtn" onclick="toggleProfileMenu()">
+      <div class="avatar" id="profileAvatar">?</div>
+      <span id="profileBtnText">로그인</span>
+      <span>▾</span>
+    </button>
+    <div class="profile-menu" id="profileMenu"></div>
+  </div>
+</nav>
 
 <header>
   <h1>🚴 로드 바이크 피팅 계산기</h1>
@@ -551,30 +729,30 @@
   <!-- ② 다리 측정 -->
   <div class="form-section">
     <div class="section-title"><span class="icon">🦵</span> 다리 측정값 <small style="font-size:0.7rem;text-transform:none;letter-spacing:0;color:var(--text3);font-weight:400;">(가장 중요)</small></div>
-    <div class="form-grid">
-      <div class="field">
-        <label>
-          인심 길이
-          <span class="tip" data-tip="맨발로 벽에 기댄 뒤, 책을 사타구니에 끼우고 바닥에서 책 윗면까지 측정. 가장 중요한 수치입니다.">?</span>
-        </label>
-        <input type="number" id="inseam" placeholder="예: 82" min="60" max="120">
-        <span class="unit-hint">cm · 사타구니~바닥</span>
+    <div class="form-grid-basic">
+      <div class="field-wrap">
+        <div class="field-inline">
+          <span class="fi-label">인심 길이 <span class="tip" data-tip="맨발로 벽에 기댄 뒤, 책을 사타구니에 끼우고 바닥에서 책 윗면까지 측정. 가장 중요한 수치입니다.">?</span></span>
+          <input type="number" id="inseam" placeholder="82" min="60" max="120">
+          <span class="fi-unit">cm</span>
+        </div>
+        <span class="fi-desc">사타구니 → 바닥</span>
       </div>
-      <div class="field">
-        <label>
-          허벅지 길이 (대퇴골)
-          <span class="tip" data-tip="서 있는 상태에서 고관절 대전자(엉덩이 옆 뼈 돌출부)에서 무릎 관절 중심까지 측정">?</span>
-        </label>
-        <input type="number" id="thigh" placeholder="예: 43" min="30" max="70">
-        <span class="unit-hint">cm · 고관절~무릎</span>
+      <div class="field-wrap">
+        <div class="field-inline">
+          <span class="fi-label">허벅지 (대퇴골) <span class="tip" data-tip="서 있는 상태에서 고관절 대전자(엉덩이 옆 뼈 돌출부)에서 무릎 관절 중심까지 측정">?</span></span>
+          <input type="number" id="thigh" placeholder="43" min="30" max="70">
+          <span class="fi-unit">cm</span>
+        </div>
+        <span class="fi-desc">고관절 → 무릎</span>
       </div>
-      <div class="field">
-        <label>
-          정강이 길이 (경골)
-          <span class="tip" data-tip="무릎 관절 중심에서 발목 복숭아뼈(외과)까지 측정">?</span>
-        </label>
-        <input type="number" id="shin" placeholder="예: 39" min="25" max="60">
-        <span class="unit-hint">cm · 무릎~발목</span>
+      <div class="field-wrap">
+        <div class="field-inline">
+          <span class="fi-label">정강이 (경골) <span class="tip" data-tip="무릎 관절 중심에서 발목 복숭아뼈(외과)까지 측정">?</span></span>
+          <input type="number" id="shin" placeholder="39" min="25" max="60">
+          <span class="fi-unit">cm</span>
+        </div>
+        <span class="fi-desc">무릎 → 발목</span>
       </div>
     </div>
   </div>
@@ -582,30 +760,30 @@
   <!-- ③ 상체 측정 -->
   <div class="form-section">
     <div class="section-title"><span class="icon">💪</span> 상체 측정값</div>
-    <div class="form-grid">
-      <div class="field">
-        <label>
-          몸통 길이
-          <span class="tip" data-tip="목 아래 C7 경추 돌출부에서 좌골(앉는 뼈)까지. 척추를 따라 측정하지 않고 수직으로 측정합니다.">?</span>
-        </label>
-        <input type="number" id="torso" placeholder="예: 57" min="35" max="80">
-        <span class="unit-hint">cm · C7~좌골</span>
+    <div class="form-grid-basic">
+      <div class="field-wrap">
+        <div class="field-inline">
+          <span class="fi-label">몸통 길이 <span class="tip" data-tip="목 아래 C7 경추 돌출부에서 좌골(앉는 뼈)까지. 척추를 따라 측정하지 않고 수직으로 측정합니다.">?</span></span>
+          <input type="number" id="torso" placeholder="57" min="35" max="80">
+          <span class="fi-unit">cm</span>
+        </div>
+        <span class="fi-desc">C7 경추 → 좌골</span>
       </div>
-      <div class="field">
-        <label>
-          팔 길이
-          <span class="tip" data-tip="어깨 끝(견봉 돌출부)에서 손목 관절 돌출부까지. 팔꿈치를 약간 구부린 자연스러운 상태.">?</span>
-        </label>
-        <input type="number" id="arm" placeholder="예: 60" min="40" max="90">
-        <span class="unit-hint">cm · 어깨~손목</span>
+      <div class="field-wrap">
+        <div class="field-inline">
+          <span class="fi-label">팔 길이 <span class="tip" data-tip="어깨 끝(견봉 돌출부)에서 손목 관절 돌출부까지. 팔꿈치를 약간 구부린 자연스러운 상태.">?</span></span>
+          <input type="number" id="arm" placeholder="60" min="40" max="90">
+          <span class="fi-unit">cm</span>
+        </div>
+        <span class="fi-desc">어깨 끝 → 손목</span>
       </div>
-      <div class="field">
-        <label>
-          어깨 넓이
-          <span class="tip" data-tip="양쪽 견봉(어깨 끝 돌출부) 사이 가장 넓은 거리. 핸들바 넓이의 기준이 됩니다.">?</span>
-        </label>
-        <input type="number" id="shoulder" placeholder="예: 41" min="25" max="65">
-        <span class="unit-hint">cm · 어깨끝~어깨끝</span>
+      <div class="field-wrap">
+        <div class="field-inline">
+          <span class="fi-label">어깨 넓이 <span class="tip" data-tip="양쪽 견봉(어깨 끝 돌출부) 사이 가장 넓은 거리. 핸들바 넓이의 기준이 됩니다.">?</span></span>
+          <input type="number" id="shoulder" placeholder="41" min="25" max="65">
+          <span class="fi-unit">cm</span>
+        </div>
+        <span class="fi-desc">어깨 끝 → 어깨 끝</span>
       </div>
     </div>
   </div>
@@ -613,19 +791,22 @@
   <!-- ④ 좌골 & 발 -->
   <div class="form-section">
     <div class="section-title"><span class="icon">📐</span> 좌골 &amp; 발 측정</div>
-    <div class="form-grid">
-      <div class="field">
-        <label>
-          좌골 넓이 <span class="optional">선택</span>
-          <span class="tip" data-tip="골판지나 알루미늄 포일 위에 앉아 생긴 두 압흔(좌골결절) 사이 거리(mm). 안장 넓이 결정에 사용. 미입력 시 어깨 넓이로 추정합니다.">?</span>
-        </label>
-        <input type="number" id="sitBone" placeholder="예: 120" min="70" max="200">
-        <span class="unit-hint">mm · 직접 측정 권장</span>
+    <div class="form-grid-basic">
+      <div class="field-wrap">
+        <div class="field-inline">
+          <span class="fi-label">좌골 넓이 <span class="optional">선택</span> <span class="tip" data-tip="골판지나 알루미늄 포일 위에 앉아 생긴 두 압흔(좌골결절) 사이 거리(mm). 미입력 시 어깨 넓이로 추정합니다.">?</span></span>
+          <input type="number" id="sitBone" placeholder="120" min="70" max="200">
+          <span class="fi-unit">mm</span>
+        </div>
+        <span class="fi-desc">직접 측정 권장 (안장 넓이 기준)</span>
       </div>
-      <div class="field">
-        <label>신발 사이즈</label>
-        <input type="number" id="shoeSize" placeholder="예: 270" min="210" max="340">
-        <span class="unit-hint">mm (EU 사이즈도 가능)</span>
+      <div class="field-wrap">
+        <div class="field-inline">
+          <span class="fi-label">신발 사이즈</span>
+          <input type="number" id="shoeSize" placeholder="270" min="210" max="340">
+          <span class="fi-unit">mm</span>
+        </div>
+        <span class="fi-desc">발 길이 기준 (EU 사이즈 가능)</span>
       </div>
     </div>
   </div>
@@ -681,6 +862,14 @@
 
     <div class="results-grid" id="resultsGrid"></div>
 
+    <!-- 저장 바 -->
+    <div class="save-bar" id="saveBar">
+      <span style="font-size:1.1rem">💾</span>
+      <input type="text" id="saveLabel" placeholder="저장 메모 입력 (예: 2025년 봄 피팅)">
+      <button class="save-bar-btn" onclick="saveRecord()">저장하기</button>
+      <span class="save-notice" id="saveNotice"></span>
+    </div>
+
     <!-- 피팅 적합도 체크 -->
     <div class="fit-check" id="fitCheck">
       <h3>✅ 피팅 적합도 분석</h3>
@@ -697,6 +886,28 @@
   </div><!-- /results -->
 
 </div><!-- /container -->
+
+<!-- ── 프로필 모달 ── -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="profModalTitle">프로필 관리</h3>
+      <button class="modal-close" onclick="closeModal('profileModal')">✕</button>
+    </div>
+    <div class="modal-body" id="profModalBody"></div>
+  </div>
+</div>
+
+<!-- ── 기록 모달 ── -->
+<div class="modal-overlay" id="histModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>📋 저장된 측정 기록</h3>
+      <button class="modal-close" onclick="closeModal('histModal')">✕</button>
+    </div>
+    <div class="modal-body" id="histModalBody"></div>
+  </div>
+</div>
 
 <script>
 /* ═══════════════════════════════════════════════
@@ -1305,6 +1516,307 @@ function drawBike(m, fit) {
     `<div class="legend-item"><div class="legend-dot" style="background:${c}"></div>${l}</div>`
   ).join('');
 }
+
+/* ═══════════════════════════════════════════════
+   PROFILE & SAVE SYSTEM
+═══════════════════════════════════════════════ */
+
+const DB = {
+  getProfiles() { return JSON.parse(localStorage.getItem('bikeFit_profiles') || '[]'); },
+  setProfiles(v) { localStorage.setItem('bikeFit_profiles', JSON.stringify(v)); },
+  getCurrentId() { return localStorage.getItem('bikeFit_current') || null; },
+  setCurrentId(id) { id ? localStorage.setItem('bikeFit_current', id) : localStorage.removeItem('bikeFit_current'); },
+  getProfile() {
+    const id = this.getCurrentId();
+    return id ? this.getProfiles().find(p => p.id === id) || null : null;
+  },
+  getRecords(pid) { return JSON.parse(localStorage.getItem(`bikeFit_rec_${pid}`) || '[]'); },
+  setRecords(pid, v) { localStorage.setItem(`bikeFit_rec_${pid}`, JSON.stringify(v)); },
+  addRecord(pid, rec) {
+    const recs = this.getRecords(pid);
+    recs.unshift(rec);
+    this.setRecords(pid, recs);
+  },
+  delRecord(pid, rid) {
+    this.setRecords(pid, this.getRecords(pid).filter(r => r.id !== rid));
+  },
+  uid() { return Math.random().toString(36).slice(2) + Date.now().toString(36); },
+};
+
+let _lastInputs = null, _lastFit = null;
+
+// calculate() 마지막에 저장 참조 보관
+const _origCalculate = calculate;
+function calculate() {
+  _origCalculate();
+  // 결과가 보이면 저장 바 상태 갱신
+  updateSaveBar();
+}
+
+function updateSaveBar() {
+  const bar = document.getElementById('saveBar');
+  const profile = DB.getProfile();
+  if (profile && document.getElementById('results').classList.contains('show')) {
+    bar.classList.add('show');
+  } else {
+    bar.classList.remove('show');
+  }
+}
+
+// ── 프로필 메뉴 토글 ──
+function toggleProfileMenu() {
+  const menu = document.getElementById('profileMenu');
+  menu.classList.toggle('open');
+  if (menu.classList.contains('open')) renderProfileMenu();
+}
+document.addEventListener('click', e => {
+  if (!document.getElementById('profileArea').contains(e.target)) {
+    document.getElementById('profileMenu').classList.remove('open');
+  }
+});
+
+function renderProfileMenu() {
+  const profile = DB.getProfile();
+  const profiles = DB.getProfiles();
+  const menu = document.getElementById('profileMenu');
+
+  if (profile) {
+    const recs = DB.getRecords(profile.id);
+    menu.innerHTML = `
+      <div class="pm-header">로그인됨: <strong style="color:var(--accent)">${profile.name}</strong></div>
+      <div class="pm-item" onclick="openHistModal()">📋 저장된 기록 <span class="pm-sub">${recs.length}개</span></div>
+      <div class="pm-divider"></div>
+      <div class="pm-item" onclick="openProfileSwitchModal()">🔄 프로필 변경</div>
+      <div class="pm-item danger" onclick="logout()">🚪 로그아웃</div>`;
+  } else {
+    const listHtml = profiles.length
+      ? profiles.map(p => {
+          const cnt = DB.getRecords(p.id).length;
+          return `<div class="pm-item" onclick="loginAs('${p.id}')">
+            <div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:#fff">${p.name[0]}</div>
+            ${p.name} <span class="pm-sub">${cnt}개</span>
+          </div>`;
+        }).join('') + '<div class="pm-divider"></div>'
+      : '';
+    menu.innerHTML = `
+      <div class="pm-header">프로필을 선택하세요</div>
+      ${listHtml}
+      <div class="pm-item active" onclick="openNewProfileModal()">＋ 새 프로필 만들기</div>`;
+  }
+}
+
+function updateTopbar() {
+  const profile = DB.getProfile();
+  const btn = document.getElementById('profileBtn');
+  const av = document.getElementById('profileAvatar');
+  const txt = document.getElementById('profileBtnText');
+  if (profile) {
+    av.textContent = profile.name[0].toUpperCase();
+    txt.textContent = profile.name;
+    av.style.background = 'linear-gradient(135deg,var(--accent),var(--accent2))';
+  } else {
+    av.textContent = '?';
+    txt.textContent = '로그인';
+    av.style.background = '#252d47';
+  }
+  updateSaveBar();
+}
+
+// ── 로그인 / 로그아웃 ──
+function loginAs(id) {
+  DB.setCurrentId(id);
+  document.getElementById('profileMenu').classList.remove('open');
+  updateTopbar();
+  showToast(`✅ ${DB.getProfile().name}으로 로그인됐습니다`);
+}
+
+function logout() {
+  DB.setCurrentId(null);
+  document.getElementById('profileMenu').classList.remove('open');
+  updateTopbar();
+  showToast('로그아웃됐습니다');
+}
+
+// ── 새 프로필 생성 모달 ──
+function openNewProfileModal() {
+  document.getElementById('profileMenu').classList.remove('open');
+  document.getElementById('profModalTitle').textContent = '새 프로필 만들기';
+  document.getElementById('profModalBody').innerHTML = `
+    <p style="font-size:0.84rem;color:var(--text2);margin-bottom:16px">이름을 입력하면 측정 기록을 저장할 수 있습니다.</p>
+    <label class="m-label">이름 *</label>
+    <input class="m-input" id="newProfName" placeholder="예: 김철수" maxlength="20">
+    <div class="m-err" id="newProfErr"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+      <button class="m-btn secondary" onclick="closeModal('profileModal')">취소</button>
+      <button class="m-btn primary" onclick="createProfile()">프로필 만들기</button>
+    </div>`;
+  openModal('profileModal');
+  setTimeout(() => document.getElementById('newProfName').focus(), 100);
+}
+
+function createProfile() {
+  const name = document.getElementById('newProfName').value.trim();
+  const err = document.getElementById('newProfErr');
+  if (!name) { err.textContent = '이름을 입력해주세요.'; err.style.display='block'; return; }
+  const profiles = DB.getProfiles();
+  if (profiles.find(p => p.name === name)) { err.textContent = '이미 사용 중인 이름입니다.'; err.style.display='block'; return; }
+  const np = { id: DB.uid(), name, createdAt: Date.now() };
+  profiles.push(np);
+  DB.setProfiles(profiles);
+  DB.setCurrentId(np.id);
+  closeModal('profileModal');
+  updateTopbar();
+  showToast(`🎉 ${name} 프로필이 생성됐습니다`);
+}
+
+// ── 프로필 전환 모달 ──
+function openProfileSwitchModal() {
+  document.getElementById('profileMenu').classList.remove('open');
+  document.getElementById('profModalTitle').textContent = '프로필 전환';
+  const profiles = DB.getProfiles();
+  const current = DB.getCurrentId();
+  const listHtml = profiles.map(p => {
+    const cnt = DB.getRecords(p.id).length;
+    const isActive = p.id === current;
+    return `<div class="prof-item ${isActive?'active':''}" onclick="loginAs('${p.id}');closeModal('profileModal')">
+      <div class="prof-avatar">${p.name[0].toUpperCase()}</div>
+      <div class="prof-info">
+        <div class="prof-name">${p.name} ${isActive?'<span style="font-size:0.72rem;color:var(--accent)">(현재)</span>':''}</div>
+        <div class="prof-meta">기록 ${cnt}개 · ${new Date(p.createdAt).toLocaleDateString('ko-KR')} 생성</div>
+      </div>
+      <button class="prof-del" onclick="event.stopPropagation();deleteProfile('${p.id}')">🗑</button>
+    </div>`;
+  }).join('');
+  document.getElementById('profModalBody').innerHTML = `
+    ${listHtml}
+    <div class="prof-divider">새 프로필</div>
+    <button class="m-btn primary" style="width:100%" onclick="closeModal('profileModal');openNewProfileModal()">＋ 새 프로필 만들기</button>`;
+  openModal('profileModal');
+}
+
+function deleteProfile(id) {
+  if (!confirm('이 프로필과 모든 기록을 삭제할까요?')) return;
+  const profiles = DB.getProfiles().filter(p => p.id !== id);
+  DB.setProfiles(profiles);
+  localStorage.removeItem(`bikeFit_rec_${id}`);
+  if (DB.getCurrentId() === id) { DB.setCurrentId(null); updateTopbar(); }
+  openProfileSwitchModal();
+}
+
+// ── 기록 저장 ──
+function saveRecord() {
+  const profile = DB.getProfile();
+  if (!profile) { showToast('⚠ 먼저 로그인해주세요'); return; }
+  if (!_lastFit) { showToast('⚠ 먼저 계산을 실행해주세요'); return; }
+  const label = document.getElementById('saveLabel').value.trim()
+    || new Date().toLocaleDateString('ko-KR', {year:'numeric',month:'long',day:'numeric'});
+  const rec = {
+    id: DB.uid(), label, savedAt: Date.now(),
+    inputs: _lastInputs, results: _lastFit,
+  };
+  DB.addRecord(profile.id, rec);
+  document.getElementById('saveLabel').value = '';
+  const notice = document.getElementById('saveNotice');
+  notice.textContent = `✅ "${label}" 저장됨`;
+  notice.style.color = 'var(--green)';
+  setTimeout(() => notice.textContent = '', 3000);
+}
+
+// ── 기록 목록 모달 ──
+function openHistModal() {
+  document.getElementById('profileMenu').classList.remove('open');
+  renderHistModal();
+  openModal('histModal');
+}
+
+function renderHistModal() {
+  const profile = DB.getProfile();
+  if (!profile) return;
+  const recs = DB.getRecords(profile.id);
+  const body = document.getElementById('histModalBody');
+  if (!recs.length) {
+    body.innerHTML = '<div class="hist-empty">저장된 기록이 없습니다.<br>계산 후 저장하기 버튼을 눌러보세요.</div>';
+    return;
+  }
+  body.innerHTML = recs.map(r => {
+    const d = new Date(r.savedAt).toLocaleDateString('ko-KR', {year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    const rs = r.results;
+    return `<div class="hist-item" onclick="loadRecord('${r.id}')">
+      <div class="hist-item-top">
+        <span class="hist-label">${r.label}</span>
+        <span style="display:flex;align-items:center;gap:4px">
+          <span class="hist-date">${d}</span>
+          <button class="hist-del" onclick="event.stopPropagation();deleteRecord('${r.id}')">✕</button>
+        </span>
+      </div>
+      <div class="hist-stats">
+        <span class="hist-stat">안장높이 <strong>${rs.saddleFromGround}cm</strong></span>
+        <span class="hist-stat">핸들높이 <strong>${rs.handlebarHeight}cm</strong></span>
+        <span class="hist-stat">크랭크 <strong>${rs.crankLength}mm</strong></span>
+        <span class="hist-stat">안장넓이 <strong>${rs.saddleWidth}mm</strong></span>
+        <span class="hist-stat">핸들넓이 <strong>${rs.handlebarWidth}cm</strong></span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function loadRecord(rid) {
+  const profile = DB.getProfile();
+  const rec = DB.getRecords(profile.id).find(r => r.id === rid);
+  if (!rec) return;
+  const inp = rec.inputs;
+  ['height','weight','age','inseam','thigh','shin','torso','arm','shoulder','sitBone','shoeSize'].forEach(k => {
+    const el = document.getElementById(k);
+    if (el && inp[k]) el.value = inp[k];
+  });
+  ['flexibility','position','experience'].forEach(k => {
+    const el = document.getElementById(k);
+    if (el && inp[k]) el.value = inp[k];
+  });
+  closeModal('histModal');
+  calculate();
+  showToast(`📂 "${rec.label}" 기록을 불러왔습니다`);
+}
+
+function deleteRecord(rid) {
+  const profile = DB.getProfile();
+  if (!confirm('이 기록을 삭제할까요?')) return;
+  DB.delRecord(profile.id, rid);
+  renderHistModal();
+}
+
+// ── 모달 유틸 ──
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+// ── 토스트 알림 ──
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a2a50;border:1px solid var(--border);border-radius:8px;padding:10px 20px;font-size:0.85rem;color:var(--text);z-index:1000;box-shadow:0 4px 20px rgba(0,0,0,0.4);transition:opacity 0.3s';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.style.opacity = '0', 2800);
+}
+
+// calculate 후 inputs/fit 캐시 저장 — 기존 renderResults 래핑
+const _origRenderResults = renderResults;
+function renderResults(m, fit) {
+  _lastInputs = m;
+  _lastFit = fit;
+  _origRenderResults(m, fit);
+}
+
+// 페이지 로드
+updateTopbar();
 </script>
 </body>
 </html>
