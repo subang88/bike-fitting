@@ -8,377 +8,307 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg:       #07090F;
-      --s1:       #0D1018;
-      --s2:       #121620;
-      --s3:       #181D2A;
-      --bd:       #1F2638;
-      --bd2:      #2A3349;
-      --accent:   #3B6EF8;
-      --accent-g: rgba(59,110,248,0.12);
-      --cyan:     #00D4FF;
-      --green:    #10C98A;
-      --orange:   #F5A623;
-      --red:      #F04C58;
-      --t1:       #EEF2FF;
-      --t2:       #8892B0;
-      --t3:       #3D4A6B;
-      --c1:#FF6370;--c2:#FFD166;--c3:#06D6A0;--c4:#C77DFF;
-      --c5:#4895EF;--c6:#9B5DE5;--c7:#00BBF9;--c8:#FF9F1C;
-      --c9:#2EC4B6;--c10:#F72585;
+      --bg:     #F0F4FF;
+      --card:   #FFFFFF;
+      --card2:  #F8FAFF;
+      --bd:     #DDE3F0;
+      --bd2:    #C8D0E8;
+      --accent: #3B6EF8;
+      --accent-lt: #EEF3FF;
+      --accent-md: #C7D7FD;
+      --green:  #0BA870;
+      --orange: #E07B0A;
+      --red:    #D93B47;
+      --cyan:   #0891B2;
+      --purple: #7C3AED;
+      --t1:     #111827;
+      --t2:     #4B5563;
+      --t3:     #9CA3AF;
+      --c1:#E53E3E;--c2:#D97706;--c3:#059669;--c4:#7C3AED;
+      --c5:#2563EB;--c6:#9333EA;--c7:#0891B2;--c8:#B45309;
+      --c9:#0D9488;--c10:#DB2777;
     }
     *{margin:0;padding:0;box-sizing:border-box;}
     html{scroll-behavior:smooth;}
     body{
       font-family:'Inter',-apple-system,'Malgun Gothic',sans-serif;
       background:var(--bg);color:var(--t1);
-      min-height:100vh;line-height:1.6;
+      min-height:100vh;line-height:1.5;
       -webkit-font-smoothing:antialiased;
     }
 
-    /* ══ HERO ══ */
+    /* ── HERO ── */
     .hero{
-      background:linear-gradient(160deg,#0D1120 0%,#0A0E1B 40%,#050709 100%);
-      border-bottom:1px solid var(--bd);
-      padding:56px 24px 48px;text-align:center;
-      position:relative;overflow:hidden;
-    }
-    .hero::before{
-      content:'';position:absolute;
-      top:-120px;left:50%;transform:translateX(-50%);
-      width:700px;height:360px;
-      background:radial-gradient(ellipse,rgba(59,110,248,0.10) 0%,transparent 70%);
-      pointer-events:none;
-    }
-    .hero-icon{
-      font-size:2.8rem;margin-bottom:16px;
-      display:block;filter:drop-shadow(0 0 20px rgba(59,110,248,0.4));
+      background:linear-gradient(135deg,#3B6EF8 0%,#1E3FA8 100%);
+      padding:28px 24px 24px;text-align:center;
     }
     .hero h1{
-      font-size:clamp(1.7rem,4vw,2.6rem);
-      font-weight:800;letter-spacing:-1px;
-      background:linear-gradient(135deg,#fff 30%,#A5BCFF 100%);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-      background-clip:text;margin-bottom:10px;
+      font-size:clamp(1.3rem,3vw,1.9rem);font-weight:800;
+      color:#fff;letter-spacing:-0.5px;margin-bottom:6px;
     }
-    .hero p{color:var(--t2);font-size:1rem;max-width:480px;margin:0 auto 20px;}
-    .hero-tags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+    .hero p{color:rgba(255,255,255,.78);font-size:0.88rem;margin-bottom:12px;}
+    .hero-tags{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;}
     .tag{
-      background:rgba(59,110,248,0.1);
-      border:1px solid rgba(59,110,248,0.25);
-      border-radius:20px;padding:4px 14px;
-      font-size:0.75rem;font-weight:600;color:#A5BCFF;letter-spacing:.3px;
+      background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);
+      border-radius:20px;padding:3px 11px;
+      font-size:0.72rem;font-weight:600;color:#fff;
     }
 
-    /* ══ LAYOUT ══ */
-    .wrap{max-width:880px;margin:0 auto;padding:40px 20px 80px;}
+    /* ── MAIN LAYOUT ── */
+    .main{max-width:980px;margin:0 auto;padding:20px 16px 60px;}
 
-    /* ══ GUIDE ══ */
+    /* ── GUIDE ── */
     .guide-card{
-      background:var(--s2);border:1px solid var(--bd);
-      border-radius:14px;margin-bottom:28px;overflow:hidden;
+      background:var(--card);border:1px solid var(--bd);
+      border-radius:10px;margin-bottom:14px;overflow:hidden;
     }
     .guide-toggle{
       width:100%;background:none;border:none;
-      padding:18px 22px;display:flex;align-items:center;
-      justify-content:space-between;cursor:pointer;
-      font-family:inherit;
+      padding:12px 16px;display:flex;align-items:center;
+      justify-content:space-between;cursor:pointer;font-family:inherit;
     }
-    .guide-toggle-left{display:flex;align-items:center;gap:10px;}
-    .guide-toggle-left span:first-child{font-size:1.1rem;}
-    .guide-toggle-title{
-      font-size:0.92rem;font-weight:700;color:var(--t1);
-    }
-    .guide-toggle-sub{font-size:0.78rem;color:var(--t2);margin-left:6px;}
-    .guide-chevron{
-      color:var(--t2);font-size:0.8rem;
-      transition:transform .25s;flex-shrink:0;
-    }
+    .guide-toggle-left{display:flex;align-items:center;gap:8px;}
+    .guide-toggle-title{font-size:0.85rem;font-weight:700;color:var(--t1);}
+    .guide-toggle-sub{font-size:0.75rem;color:var(--t3);margin-left:4px;}
+    .guide-chevron{color:var(--t3);font-size:0.75rem;transition:transform .2s;flex-shrink:0;}
     .guide-card.open .guide-chevron{transform:rotate(180deg);}
-    .guide-body{display:none;padding:0 22px 20px;}
+    .guide-body{display:none;padding:0 16px 14px;}
     .guide-card.open .guide-body{display:block;}
     .guide-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
-      gap:14px;margin-top:4px;
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+      gap:10px;margin-top:4px;
     }
-    .gitem{
-      background:var(--s3);border:1px solid var(--bd);
-      border-radius:10px;padding:14px 16px;
-    }
-    .gitem-head{
-      display:flex;align-items:center;gap:8px;
-      margin-bottom:8px;
-    }
-    .gitem-icon{font-size:1.2rem;}
-    .gitem-title{font-size:0.85rem;font-weight:700;color:var(--t1);}
+    .gitem{background:var(--card2);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;}
+    .gitem-head{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+    .gitem-icon{font-size:1rem;}
+    .gitem-title{font-size:0.8rem;font-weight:700;color:var(--t1);}
     .gitem-badge{
-      font-size:0.65rem;font-weight:700;
-      background:rgba(248,99,59,0.15);color:#FF9F1C;
-      border-radius:4px;padding:2px 6px;margin-left:auto;
+      font-size:0.62rem;font-weight:700;
+      background:#FEF3C7;color:#92400E;
+      border-radius:3px;padding:1px 5px;margin-left:auto;
     }
-    .gitem-steps{list-style:none;padding:0;}
+    .gitem-steps{list-style:none;}
     .gitem-steps li{
-      font-size:0.78rem;color:var(--t2);
-      padding:3px 0 3px 14px;position:relative;line-height:1.5;
+      font-size:0.74rem;color:var(--t2);
+      padding:2px 0 2px 12px;position:relative;line-height:1.45;
     }
-    .gitem-steps li::before{
-      content:'›';position:absolute;left:2px;color:var(--accent);font-weight:700;
-    }
+    .gitem-steps li::before{content:'›';position:absolute;left:1px;color:var(--accent);font-weight:700;}
     .gitem-warn{
-      font-size:0.75rem;color:var(--orange);
-      background:rgba(245,166,35,0.08);
-      border-radius:5px;padding:5px 8px;margin-top:8px;
+      font-size:0.72rem;color:#92400E;background:#FEF3C7;
+      border-radius:4px;padding:4px 7px;margin-top:6px;
     }
 
-    /* ══ FORM SECTION ══ */
-    .fsec{
-      background:var(--s2);border:1px solid var(--bd);
-      border-radius:14px;padding:24px 24px 20px;
-      margin-bottom:16px;
+    /* ── FORM CARD ── */
+    .form-card{
+      background:var(--card);border:1px solid var(--bd);
+      border-radius:12px;padding:20px 20px 16px;margin-bottom:12px;
     }
-    .fsec-title{
-      font-size:0.78rem;font-weight:700;
-      text-transform:uppercase;letter-spacing:1.2px;
-      color:var(--accent);
-      display:flex;align-items:center;gap:8px;
-      margin-bottom:18px;padding-bottom:14px;
+
+    /* ── FORM GROUPS (section label rows) ── */
+    .fgroup{margin-bottom:14px;}
+    .fgroup:last-child{margin-bottom:0;}
+    .fgroup-label{
+      font-size:0.68rem;font-weight:700;text-transform:uppercase;
+      letter-spacing:1px;color:var(--accent);
+      display:flex;align-items:center;gap:6px;
+      margin-bottom:8px;padding-bottom:7px;
       border-bottom:1px solid var(--bd);
     }
-    .fsec-title .num{
-      width:22px;height:22px;border-radius:6px;
-      background:var(--accent-g);border:1px solid rgba(59,110,248,.3);
+    .fgroup-label .num{
+      width:18px;height:18px;border-radius:5px;
+      background:var(--accent-lt);border:1px solid var(--accent-md);
       display:flex;align-items:center;justify-content:center;
-      font-size:0.72rem;color:var(--accent);font-weight:800;
+      font-size:0.65rem;color:var(--accent);font-weight:800;
     }
-    .fgrid{
-      display:grid;
-      grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
-      gap:12px;
-    }
+    .fgroup-note{font-size:0.68rem;font-weight:400;color:var(--t3);text-transform:none;letter-spacing:0;margin-left:2px;}
 
-    /* ══ COMBO ROW ══ */
-    .crow{display:flex;flex-direction:column;gap:5px;}
-    .crow-desc{font-size:0.71rem;color:var(--t3);padding-left:2px;}
+    /* 3-col grid for inputs */
+    .fg3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+    .fg2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+    @media(max-width:600px){.fg3,.fg2{grid-template-columns:1fr 1fr;}}
+    @media(max-width:400px){.fg3{grid-template-columns:1fr;} .fg2{grid-template-columns:1fr;}}
+
+    /* ── COMBO INPUT ── */
     .cbox{
       display:flex;align-items:stretch;
-      background:var(--s3);border:1px solid var(--bd);
-      border-radius:10px;overflow:hidden;
-      transition:border-color .18s,box-shadow .18s;
+      background:var(--card2);border:1px solid var(--bd);
+      border-radius:8px;overflow:hidden;
+      transition:border-color .15s,box-shadow .15s;
+      height:38px;
     }
-    .cbox:focus-within{
-      border-color:var(--accent);
-      box-shadow:0 0 0 3px rgba(59,110,248,.14);
-    }
+    .cbox:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,110,248,.12);}
     .cbox-label{
-      flex-shrink:0;min-width:0;
-      padding:0 14px;
-      display:flex;align-items:center;gap:6px;
-      background:rgba(255,255,255,.025);
-      border-right:1px solid var(--bd);
-      font-size:0.8rem;font-weight:600;color:var(--t2);
-      white-space:nowrap;
-      position:relative;
+      flex-shrink:0;padding:0 9px;
+      display:flex;align-items:center;gap:4px;
+      background:#F1F5FD;border-right:1px solid var(--bd);
+      font-size:0.75rem;font-weight:600;color:var(--t2);
+      white-space:nowrap;position:relative;min-width:0;
     }
     .cbox-label .tip{
-      width:15px;height:15px;border-radius:50%;
-      border:1px solid var(--t3);
+      width:13px;height:13px;border-radius:50%;
+      border:1px solid var(--bd2);
       display:flex;align-items:center;justify-content:center;
-      font-size:0.68rem;color:var(--t3);cursor:help;
-      flex-shrink:0;position:relative;
+      font-size:0.62rem;color:var(--t3);cursor:help;flex-shrink:0;
     }
     .cbox-label .tip:hover::after{
       content:attr(data-tip);
-      position:absolute;bottom:calc(100% + 8px);left:50%;
-      transform:translateX(-50%);
-      background:#1a2040;border:1px solid var(--bd2);
-      border-radius:8px;padding:10px 14px;
-      font-size:0.76rem;color:var(--t2);
-      white-space:normal;min-width:200px;max-width:260px;
-      line-height:1.55;z-index:100;
-      box-shadow:0 6px 24px rgba(0,0,0,.5);
+      position:absolute;bottom:calc(100% + 6px);left:0;
+      background:#1a2040;border:1px solid #2A3349;
+      border-radius:7px;padding:8px 12px;
+      font-size:0.73rem;color:#C8D4FF;
+      white-space:normal;min-width:190px;max-width:250px;
+      line-height:1.5;z-index:200;
+      box-shadow:0 6px 20px rgba(0,0,0,.25);
       pointer-events:none;font-weight:400;
     }
     .cbox select{
-      flex:1;min-width:0;
-      background:transparent;border:none;
-      padding:0 36px 0 14px;height:44px;
-      color:var(--t1);font-size:0.92rem;font-weight:600;
+      flex:1;min-width:0;background:transparent;border:none;
+      padding:0 28px 0 8px;
+      color:var(--t1);font-size:0.85rem;font-weight:600;
       font-family:inherit;outline:none;cursor:pointer;
       -webkit-appearance:none;appearance:none;
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%238892B0' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-      background-repeat:no-repeat;
-      background-position:right 14px center;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239CA3AF' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 10px center;
     }
-    .cbox select option{background:#1a2040;color:var(--t1);}
+    .cbox select option{background:#fff;color:#111;}
     .cbox-unit{
-      flex-shrink:0;
-      padding:0 14px;
+      flex-shrink:0;padding:0 9px;
       display:flex;align-items:center;
       border-left:1px solid var(--bd);
-      background:rgba(59,110,248,.06);
-      font-size:0.8rem;font-weight:700;color:var(--accent);
+      background:#EEF3FF;
+      font-size:0.73rem;font-weight:700;color:var(--accent);
       white-space:nowrap;
     }
     .opt-tag{
-      font-size:0.65rem;background:rgba(255,255,255,.06);
-      border-radius:4px;padding:1px 5px;color:var(--t3);margin-left:2px;
+      font-size:0.6rem;background:#E0E7FF;color:#4B5EAA;
+      border-radius:3px;padding:1px 4px;margin-left:2px;
     }
 
-    /* ══ STYLE SELECT (유연성, 포지션, 경험) ══ */
+    /* ── STYLE SELECT ── */
     .ssel{
-      background:var(--s3);border:1px solid var(--bd);
-      border-radius:10px;overflow:hidden;
-      transition:border-color .18s,box-shadow .18s;
+      background:var(--card2);border:1px solid var(--bd);
+      border-radius:8px;overflow:hidden;
+      transition:border-color .15s,box-shadow .15s;
     }
-    .ssel:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,110,248,.14);}
-    .ssel-label{
-      font-size:0.8rem;font-weight:600;color:var(--t2);
-      padding:10px 14px 0;display:block;
-    }
+    .ssel:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,110,248,.12);}
+    .ssel-label{font-size:0.72rem;font-weight:600;color:var(--t2);padding:7px 10px 0;display:block;}
     .ssel select{
       width:100%;background:transparent;border:none;
-      padding:6px 36px 10px 14px;
-      color:var(--t1);font-size:0.88rem;font-weight:600;
+      padding:3px 30px 7px 10px;
+      color:var(--t1);font-size:0.82rem;font-weight:600;
       font-family:inherit;outline:none;cursor:pointer;
       -webkit-appearance:none;appearance:none;
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%238892B0' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-      background-repeat:no-repeat;background-position:right 14px center;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239CA3AF' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 10px center;
     }
-    .ssel select option{background:#1a2040;}
+    .ssel select option{background:#fff;color:#111;}
 
-    /* ══ CALC BUTTON ══ */
-    .calc-wrap{margin:28px 0;}
+    /* ── CALC BUTTON ── */
     .calc-btn{
-      width:100%;padding:17px;
-      background:linear-gradient(135deg,#2952D9,#1E3FA8);
-      border:1px solid rgba(59,110,248,.3);
-      border-radius:12px;color:#fff;
-      font-family:inherit;font-size:1rem;font-weight:700;
-      cursor:pointer;letter-spacing:.3px;
-      transition:opacity .18s,transform .1s,box-shadow .18s;
-      box-shadow:0 4px 24px rgba(41,82,217,.25);
-      display:flex;align-items:center;justify-content:center;gap:8px;
+      width:100%;padding:14px;margin-top:4px;
+      background:linear-gradient(135deg,#3B6EF8,#1E3FA8);
+      border:none;border-radius:10px;color:#fff;
+      font-family:inherit;font-size:0.97rem;font-weight:700;
+      cursor:pointer;letter-spacing:.2px;
+      transition:opacity .15s,transform .1s,box-shadow .15s;
+      box-shadow:0 4px 16px rgba(59,110,248,.3);
+      display:flex;align-items:center;justify-content:center;gap:7px;
     }
-    .calc-btn:hover{opacity:.92;box-shadow:0 6px 32px rgba(41,82,217,.35);}
-    .calc-btn:active{transform:scale(.995);}
-    .calc-btn-icon{font-size:1.2rem;}
+    .calc-btn:hover{opacity:.93;box-shadow:0 6px 24px rgba(59,110,248,.4);}
+    .calc-btn:active{transform:scale(.997);}
 
-    /* ══ ERROR ══ */
+    /* ── ERROR ── */
     .err-msg{
-      background:rgba(240,76,88,.08);border:1px solid rgba(240,76,88,.25);
-      border-radius:8px;padding:12px 16px;color:var(--red);
-      font-size:0.84rem;margin-bottom:18px;display:none;
+      background:#FEF2F2;border:1px solid #FECACA;
+      border-radius:7px;padding:10px 14px;color:var(--red);
+      font-size:0.82rem;margin-bottom:12px;display:none;
     }
 
-    /* ══ RESULTS ══ */
+    /* ── RESULTS ── */
     #results{display:none;}
     #results.show{display:block;}
-    .res-header{text-align:center;margin-bottom:32px;padding-top:8px;}
-    .res-header h2{
-      font-size:1.5rem;font-weight:800;
-      background:linear-gradient(135deg,#fff,#A5BCFF);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-      background-clip:text;margin-bottom:6px;
-    }
-    .res-header p{color:var(--t2);font-size:0.88rem;}
+    .res-header{text-align:center;margin:24px 0 16px;padding-top:4px;}
+    .res-header h2{font-size:1.3rem;font-weight:800;color:var(--t1);margin-bottom:4px;}
+    .res-header p{color:var(--t2);font-size:0.84rem;}
 
     .res-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fill,minmax(248px,1fr));
-      gap:14px;margin-bottom:32px;
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+      gap:10px;margin-bottom:16px;
     }
     .rcard{
-      background:var(--s2);border:1px solid var(--bd);
-      border-radius:12px;padding:18px 18px 16px;
+      background:var(--card);border:1px solid var(--bd);
+      border-radius:10px;padding:14px 14px 12px;
       position:relative;overflow:hidden;
       transition:transform .15s,box-shadow .15s;
     }
     .rcard::after{
-      content:'';position:absolute;
-      top:0;left:0;right:0;height:3px;
-      background:var(--cc);border-radius:12px 12px 0 0;
+      content:'';position:absolute;top:0;left:0;right:0;height:3px;
+      background:var(--cc);border-radius:10px 10px 0 0;
     }
-    .rcard:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.3);}
+    .rcard:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08);}
     .rcard-num{
-      position:absolute;top:14px;right:14px;
-      width:24px;height:24px;border-radius:7px;
-      background:color-mix(in srgb, var(--cc) 18%, transparent);
+      position:absolute;top:11px;right:11px;
+      width:21px;height:21px;border-radius:6px;
+      background:color-mix(in srgb, var(--cc) 15%, transparent);
       border:1px solid color-mix(in srgb, var(--cc) 30%, transparent);
       display:flex;align-items:center;justify-content:center;
-      font-size:0.7rem;font-weight:800;color:var(--cc);
+      font-size:0.66rem;font-weight:800;color:var(--cc);
     }
-    .rcard-label{
-      font-size:0.7rem;font-weight:700;
-      text-transform:uppercase;letter-spacing:.7px;
-      color:var(--t2);margin-bottom:3px;
-    }
-    .rcard-name{font-size:0.88rem;font-weight:600;color:var(--t1);margin-bottom:10px;}
-    .rcard-val{display:flex;align-items:baseline;gap:5px;margin-bottom:5px;}
-    .rcard-val .n{font-size:2.1rem;font-weight:800;color:var(--cc);line-height:1;}
-    .rcard-val .u{font-size:0.85rem;font-weight:600;color:var(--t2);}
-    .rcard-range{font-size:0.73rem;color:var(--t3);}
+    .rcard-label{font-size:0.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--t3);margin-bottom:2px;}
+    .rcard-name{font-size:0.82rem;font-weight:600;color:var(--t1);margin-bottom:8px;}
+    .rcard-val{display:flex;align-items:baseline;gap:4px;margin-bottom:3px;}
+    .rcard-val .n{font-size:1.9rem;font-weight:800;color:var(--cc);line-height:1;}
+    .rcard-val .u{font-size:0.8rem;font-weight:600;color:var(--t3);}
+    .rcard-range{font-size:0.7rem;color:var(--t3);}
     .rcard-desc{
-      font-size:0.76rem;color:var(--t2);
-      margin-top:8px;padding-top:8px;
+      font-size:0.72rem;color:var(--t2);
+      margin-top:7px;padding-top:7px;
       border-top:1px solid var(--bd);line-height:1.5;
     }
 
-    /* ══ FIT CHECK ══ */
+    /* ── FIT CHECK ── */
     .fitcheck{
-      background:var(--s2);border:1px solid var(--bd);
-      border-radius:12px;padding:22px 24px;margin-bottom:28px;
+      background:var(--card);border:1px solid var(--bd);
+      border-radius:10px;padding:16px 18px;margin-bottom:14px;
     }
-    .fitcheck h3{
-      font-size:0.92rem;font-weight:700;color:var(--t1);
-      margin-bottom:14px;display:flex;align-items:center;gap:8px;
-    }
-    .fitrows{display:flex;flex-direction:column;gap:9px;}
-    .fitrow{display:flex;align-items:flex-start;gap:10px;font-size:0.83rem;}
-    .fdot{
-      width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:6px;
-    }
+    .fitcheck h3{font-size:0.88rem;font-weight:700;color:var(--t1);margin-bottom:10px;}
+    .fitrows{display:flex;flex-direction:column;gap:7px;}
+    .fitrow{display:flex;align-items:flex-start;gap:8px;font-size:0.8rem;}
+    .fdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px;}
     .fdot.g{background:var(--green);}
     .fdot.w{background:var(--orange);}
     .fdot.b{background:var(--red);}
-    .ftext{color:var(--t2);line-height:1.55;}
+    .ftext{color:var(--t2);line-height:1.5;}
     .ftext strong{color:var(--t1);}
 
-    /* ══ VIZ ══ */
+    /* ── VIZ ── */
     .viz-wrap{
-      background:var(--s2);border:1px solid var(--bd);
-      border-radius:14px;padding:24px 20px 20px;margin-bottom:28px;
+      background:var(--card);border:1px solid var(--bd);
+      border-radius:10px;padding:18px 16px 14px;margin-bottom:16px;
     }
     .viz-title{
-      font-size:0.75rem;font-weight:700;text-transform:uppercase;
-      letter-spacing:1px;color:var(--t2);text-align:center;margin-bottom:18px;
+      font-size:0.72rem;font-weight:700;text-transform:uppercase;
+      letter-spacing:.8px;color:var(--t3);text-align:center;margin-bottom:14px;
     }
     #svgWrap{overflow-x:auto;}
     #svgWrap svg{display:block;margin:0 auto;max-width:100%;}
     .viz-legend{
-      display:flex;flex-wrap:wrap;gap:6px 14px;
-      margin-top:16px;justify-content:center;
+      display:flex;flex-wrap:wrap;gap:5px 12px;
+      margin-top:12px;justify-content:center;
     }
-    .vleg{display:flex;align-items:center;gap:5px;font-size:0.72rem;color:var(--t2);}
-    .vdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+    .vleg{display:flex;align-items:center;gap:4px;font-size:0.7rem;color:var(--t2);}
+    .vdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 
-    /* ══ DIVIDER ══ */
-    .section-sep{
-      display:flex;align-items:center;gap:12px;
-      margin:32px 0 24px;
-    }
-    .section-sep-line{flex:1;height:1px;background:var(--bd);}
-    .section-sep-text{font-size:0.78rem;font-weight:700;color:var(--t3);white-space:nowrap;}
+    /* ── DIVIDER ── */
+    .sep{display:flex;align-items:center;gap:10px;margin:20px 0 14px;}
+    .sep-line{flex:1;height:1px;background:var(--bd);}
+    .sep-text{font-size:0.74rem;font-weight:700;color:var(--t3);white-space:nowrap;}
 
-    /* ══ MOBILE ══ */
     @media(max-width:640px){
-      .hero{padding:40px 20px 36px;}
-      .hero h1{font-size:1.6rem;}
-      .wrap{padding:28px 16px 60px;}
-      .fsec{padding:20px 16px 16px;}
-      .fgrid{grid-template-columns:1fr;}
+      .hero{padding:22px 16px 18px;}
+      .main{padding:14px 12px 48px;}
+      .form-card{padding:16px 14px 12px;}
       .res-grid{grid-template-columns:1fr 1fr;}
-      .guide-grid{grid-template-columns:1fr;}
     }
     @media(max-width:400px){
       .res-grid{grid-template-columns:1fr;}
@@ -387,22 +317,20 @@
 </head>
 <body>
 
-<!-- ══ HERO ══ -->
 <header class="hero">
-  <span class="hero-icon">🚴</span>
-  <h1>로드 바이크 피팅 계산기</h1>
-  <p>신체 측정값을 입력하면 전문 피터 기준으로 최적의 피팅 수치를 계산합니다</p>
+  <h1>🚴 로드 바이크 피팅 계산기</h1>
+  <p>신체 측정값 입력 → 전문 피터 기준 최적 피팅 수치 산출</p>
   <div class="hero-tags">
-    <span class="tag">LeMond 공식 적용</span>
+    <span class="tag">LeMond 공식</span>
     <span class="tag">KOPS 기준</span>
-    <span class="tag">10가지 피팅 수치</span>
+    <span class="tag">10가지 수치</span>
     <span class="tag">SVG 시각화</span>
   </div>
 </header>
 
-<div class="wrap">
+<div class="main">
 
-  <!-- ══ 측정 가이드 ══ -->
+  <!-- 측정 가이드 (접기/펼치기) -->
   <div class="guide-card" id="guideCard">
     <button class="guide-toggle" onclick="document.getElementById('guideCard').classList.toggle('open')">
       <div class="guide-toggle-left">
@@ -414,140 +342,99 @@
     </button>
     <div class="guide-body">
       <div class="guide-grid">
-
         <div class="gitem">
-          <div class="gitem-head">
-            <span class="gitem-icon">📌</span>
-            <span class="gitem-title">인심 (Inseam)</span>
-            <span class="gitem-badge">가장 중요</span>
-          </div>
+          <div class="gitem-head"><span class="gitem-icon">📌</span><span class="gitem-title">인심 (Inseam)</span><span class="gitem-badge">가장 중요</span></div>
           <ul class="gitem-steps">
             <li>맨발로 단단한 벽에 등을 기댑니다</li>
             <li>두꺼운 책을 사타구니에 수평으로 끼웁니다</li>
             <li>바닥에서 책 윗면까지 수직으로 측정</li>
             <li>2~3회 측정 후 평균값을 사용합니다</li>
           </ul>
-          <div class="gitem-warn">⚠ 신발을 신거나 두꺼운 옷 착용 시 오차 발생</div>
+          <div class="gitem-warn">⚠ 신발 착용·두꺼운 옷 시 오차 발생</div>
         </div>
-
         <div class="gitem">
-          <div class="gitem-head">
-            <span class="gitem-icon">🦴</span>
-            <span class="gitem-title">허벅지 (대퇴골)</span>
-          </div>
+          <div class="gitem-head"><span class="gitem-icon">🦴</span><span class="gitem-title">허벅지 (대퇴골)</span></div>
           <ul class="gitem-steps">
             <li>서 있는 상태에서 측정</li>
             <li>엉덩이 옆 대전자(가장 돌출된 뼈)를 찾습니다</li>
-            <li>대전자 중심에서 무릎 관절 중심까지</li>
+            <li>대전자 중심 → 무릎 관절 중심까지</li>
           </ul>
-          <div class="gitem-warn">⚠ 무릎은 관절 중심(옆에서 봤을 때 중간 지점)</div>
+          <div class="gitem-warn">⚠ 무릎은 관절 중심 (옆에서 봤을 때 중간)</div>
         </div>
-
         <div class="gitem">
-          <div class="gitem-head">
-            <span class="gitem-icon">🦵</span>
-            <span class="gitem-title">정강이 (경골)</span>
-          </div>
+          <div class="gitem-head"><span class="gitem-icon">🦵</span><span class="gitem-title">정강이 (경골)</span></div>
           <ul class="gitem-steps">
             <li>무릎 관절 중심에서 측정 시작</li>
             <li>발목 바깥쪽 복숭아뼈(외과) 중심까지</li>
             <li>다리를 똑바로 편 상태로 측정</li>
           </ul>
         </div>
-
         <div class="gitem">
-          <div class="gitem-head">
-            <span class="gitem-icon">🏋️</span>
-            <span class="gitem-title">몸통 길이</span>
-          </div>
+          <div class="gitem-head"><span class="gitem-icon">🏋️</span><span class="gitem-title">몸통 길이</span></div>
           <ul class="gitem-steps">
             <li>목을 앞으로 숙여 C7 경추(가장 크게 튀어나온 뼈)를 찾습니다</li>
-            <li>C7에서 좌골(앉을 때 닿는 뼈)까지 수직으로 측정</li>
-            <li>척추 곡선을 따라 재지 않고 수직으로 측정</li>
+            <li>C7 → 좌골(앉을 때 닿는 뼈)까지 수직으로 측정</li>
           </ul>
           <div class="gitem-warn">⚠ 바른 자세로 서서 측정 (구부정하면 오차)</div>
         </div>
-
         <div class="gitem">
-          <div class="gitem-head">
-            <span class="gitem-icon">💪</span>
-            <span class="gitem-title">팔 길이</span>
-          </div>
+          <div class="gitem-head"><span class="gitem-icon">💪</span><span class="gitem-title">팔 길이</span></div>
           <ul class="gitem-steps">
             <li>어깨 끝 견봉 돌출부를 찾습니다</li>
-            <li>견봉에서 손목 관절 돌출부까지 측정</li>
+            <li>견봉 → 손목 관절 돌출부까지 측정</li>
             <li>팔꿈치를 약간 구부린 자연스러운 상태</li>
           </ul>
         </div>
-
         <div class="gitem">
-          <div class="gitem-head">
-            <span class="gitem-icon">↔️</span>
-            <span class="gitem-title">어깨 넓이</span>
-          </div>
+          <div class="gitem-head"><span class="gitem-icon">↔️</span><span class="gitem-title">어깨 넓이</span></div>
           <ul class="gitem-steps">
             <li>양쪽 어깨 끝 견봉을 찾습니다</li>
-            <li>왼쪽 견봉 끝에서 오른쪽 견봉 끝까지</li>
+            <li>왼쪽 견봉 끝 → 오른쪽 견봉 끝</li>
             <li>가장 넓은 지점을 수평으로 측정</li>
           </ul>
           <div class="gitem-warn">⚠ 핸들바 넓이의 기준이 됩니다</div>
         </div>
-
         <div class="gitem">
-          <div class="gitem-head">
-            <span class="gitem-icon">🪑</span>
-            <span class="gitem-title">좌골 넓이 (선택)</span>
-          </div>
+          <div class="gitem-head"><span class="gitem-icon">🪑</span><span class="gitem-title">좌골 넓이 (선택)</span></div>
           <ul class="gitem-steps">
-            <li>두꺼운 종이 또는 알루미늄 포일 위에 앉습니다</li>
-            <li>10분 후 생긴 두 압흔 사이 거리를 자로 측정</li>
+            <li>두꺼운 종이 위에 앉아 생긴 압흔 사이 거리</li>
             <li>전문 샵에서 측정하면 가장 정확합니다</li>
           </ul>
-          <div class="gitem-warn">⚠ 미입력 시 어깨 넓이 기준으로 추정합니다</div>
+          <div class="gitem-warn">⚠ 미입력 시 어깨 비율로 추정합니다</div>
         </div>
-
         <div class="gitem">
-          <div class="gitem-head">
-            <span class="gitem-icon">👟</span>
-            <span class="gitem-title">신발 사이즈</span>
-          </div>
+          <div class="gitem-head"><span class="gitem-icon">👟</span><span class="gitem-title">신발 사이즈</span></div>
           <ul class="gitem-steps">
-            <li>자전거용 클릿 슈즈 사이즈를 입력합니다</li>
-            <li>mm 단위 = 발 길이 기준</li>
-            <li>EU 사이즈 예: EU42 = 약 265mm</li>
+            <li>자전거용 클릿 슈즈 사이즈 (mm 단위)</li>
+            <li>EU 사이즈 예: EU42 ≈ 265mm</li>
           </ul>
         </div>
-
       </div>
     </div>
   </div>
 
   <div class="err-msg" id="errMsg"></div>
 
-  <!-- ══ FORM ══ -->
+  <!-- ── 입력 폼 (한 카드에 모두) ── -->
+  <div class="form-card">
 
-  <!-- ① 기본 신체 정보 -->
-  <div class="fsec">
-    <div class="fsec-title">
-      <div class="num">1</div>
-      기본 신체 정보
-    </div>
-    <div class="fgrid">
-      <div class="crow">
+    <!-- ① 기본 신체 -->
+    <div class="fgroup">
+      <div class="fgroup-label">
+        <div class="num">1</div>
+        기본 신체 정보
+      </div>
+      <div class="fg3">
         <div class="cbox">
           <span class="cbox-label">키</span>
           <select id="height"><option value="">선택</option></select>
           <span class="cbox-unit">cm</span>
         </div>
-      </div>
-      <div class="crow">
         <div class="cbox">
           <span class="cbox-label">체중</span>
           <select id="weight"><option value="">선택</option></select>
           <span class="cbox-unit">kg</span>
         </div>
-      </div>
-      <div class="crow">
         <div class="cbox">
           <span class="cbox-label">나이</span>
           <select id="age"><option value="">선택</option></select>
@@ -555,173 +442,146 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- ② 다리 측정값 -->
-  <div class="fsec">
-    <div class="fsec-title">
-      <div class="num">2</div>
-      다리 측정값
-      <span style="font-size:0.7rem;font-weight:500;text-transform:none;letter-spacing:0;color:var(--t3);margin-left:4px;">(안장 높이에 직접 영향)</span>
-    </div>
-    <div class="fgrid">
-      <div class="crow">
+    <!-- ② 다리 측정값 -->
+    <div class="fgroup">
+      <div class="fgroup-label">
+        <div class="num">2</div>
+        다리 측정값
+        <span class="fgroup-note">안장 높이에 직접 영향</span>
+      </div>
+      <div class="fg3">
         <div class="cbox">
-          <span class="cbox-label">인심 길이
-            <span class="tip" data-tip="가장 중요한 수치입니다. 맨발로 벽에 기대어 책을 사타구니에 수평으로 끼운 후 바닥에서 책 윗면까지 수직 측정.">?</span>
+          <span class="cbox-label">인심
+            <span class="tip" data-tip="가장 중요한 수치. 맨발로 벽에 기대어 책을 사타구니에 수평으로 끼운 후 바닥에서 책 윗면까지 수직 측정.">?</span>
           </span>
           <select id="inseam"><option value="">선택</option></select>
           <span class="cbox-unit">cm</span>
         </div>
-        <span class="crow-desc">사타구니 → 바닥</span>
-      </div>
-      <div class="crow">
         <div class="cbox">
           <span class="cbox-label">허벅지
-            <span class="tip" data-tip="고관절 대전자(엉덩이 옆 돌출 뼈)에서 무릎 관절 중심까지 측정합니다.">?</span>
+            <span class="tip" data-tip="고관절 대전자(엉덩이 옆 돌출 뼈)에서 무릎 관절 중심까지 측정.">?</span>
           </span>
           <select id="thigh"><option value="">선택</option></select>
           <span class="cbox-unit">cm</span>
         </div>
-        <span class="crow-desc">고관절 → 무릎</span>
-      </div>
-      <div class="crow">
         <div class="cbox">
           <span class="cbox-label">정강이
-            <span class="tip" data-tip="무릎 관절 중심에서 발목 외과(바깥 복숭아뼈) 중심까지 측정합니다.">?</span>
+            <span class="tip" data-tip="무릎 관절 중심에서 발목 외과(바깥 복숭아뼈) 중심까지 측정.">?</span>
           </span>
           <select id="shin"><option value="">선택</option></select>
           <span class="cbox-unit">cm</span>
         </div>
-        <span class="crow-desc">무릎 → 발목</span>
       </div>
     </div>
-  </div>
 
-  <!-- ③ 상체 측정값 -->
-  <div class="fsec">
-    <div class="fsec-title">
-      <div class="num">3</div>
-      상체 측정값
-      <span style="font-size:0.7rem;font-weight:500;text-transform:none;letter-spacing:0;color:var(--t3);margin-left:4px;">(핸들 높이·넓이·리치에 영향)</span>
-    </div>
-    <div class="fgrid">
-      <div class="crow">
+    <!-- ③ 상체 측정값 -->
+    <div class="fgroup">
+      <div class="fgroup-label">
+        <div class="num">3</div>
+        상체 측정값
+        <span class="fgroup-note">핸들 높이·넓이·리치에 영향</span>
+      </div>
+      <div class="fg3">
         <div class="cbox">
-          <span class="cbox-label">몸통 길이
-            <span class="tip" data-tip="C7 경추(목 아래 가장 크게 튀어나온 뼈)에서 좌골까지 수직으로 측정합니다. 곡선으로 재지 않습니다.">?</span>
+          <span class="cbox-label">몸통
+            <span class="tip" data-tip="C7 경추(목 아래 가장 크게 튀어나온 뼈)에서 좌골까지 수직으로 측정. 곡선으로 재지 않습니다.">?</span>
           </span>
           <select id="torso"><option value="">선택</option></select>
           <span class="cbox-unit">cm</span>
         </div>
-        <span class="crow-desc">C7 경추 → 좌골</span>
-      </div>
-      <div class="crow">
         <div class="cbox">
-          <span class="cbox-label">팔 길이
-            <span class="tip" data-tip="어깨 견봉 끝에서 손목 관절까지. 팔꿈치를 자연스럽게 살짝 구부린 상태로 측정합니다.">?</span>
+          <span class="cbox-label">팔
+            <span class="tip" data-tip="어깨 견봉 끝에서 손목 관절까지. 팔꿈치를 자연스럽게 살짝 구부린 상태로 측정.">?</span>
           </span>
           <select id="arm"><option value="">선택</option></select>
           <span class="cbox-unit">cm</span>
         </div>
-        <span class="crow-desc">어깨 끝 → 손목</span>
-      </div>
-      <div class="crow">
         <div class="cbox">
-          <span class="cbox-label">어깨 넓이
-            <span class="tip" data-tip="양쪽 견봉(어깨 끝 가장 돌출된 뼈) 사이 가장 넓은 거리. 핸들바 넓이의 기준이 됩니다.">?</span>
+          <span class="cbox-label">어깨
+            <span class="tip" data-tip="양쪽 견봉(어깨 끝 가장 돌출된 뼈) 사이 가장 넓은 거리. 핸들바 넓이의 기준.">?</span>
           </span>
           <select id="shoulder"><option value="">선택</option></select>
           <span class="cbox-unit">cm</span>
         </div>
-        <span class="crow-desc">어깨 끝 → 어깨 끝</span>
       </div>
     </div>
-  </div>
 
-  <!-- ④ 좌골 & 신발 -->
-  <div class="fsec">
-    <div class="fsec-title">
-      <div class="num">4</div>
-      좌골 &amp; 신발
-    </div>
-    <div class="fgrid">
-      <div class="crow">
+    <!-- ④ 좌골 & 신발 -->
+    <div class="fgroup">
+      <div class="fgroup-label">
+        <div class="num">4</div>
+        좌골 &amp; 신발
+      </div>
+      <div class="fg2">
         <div class="cbox">
-          <span class="cbox-label">좌골 넓이 <span class="opt-tag">선택</span>
-            <span class="tip" data-tip="두꺼운 종이 위에 앉아 생긴 압흔 사이 거리(mm). 전문 샵 측정 권장. 미입력 시 어깨 비율로 추정합니다.">?</span>
+          <span class="cbox-label">좌골 <span class="opt-tag">선택</span>
+            <span class="tip" data-tip="두꺼운 종이 위에 앉아 생긴 압흔 사이 거리(mm). 미입력 시 어깨 비율로 추정합니다.">?</span>
           </span>
           <select id="sitBone"><option value="">선택 안 함</option></select>
           <span class="cbox-unit">mm</span>
         </div>
-        <span class="crow-desc">안장 넓이 결정 기준</span>
-      </div>
-      <div class="crow">
         <div class="cbox">
-          <span class="cbox-label">신발 사이즈</span>
+          <span class="cbox-label">신발</span>
           <select id="shoeSize"><option value="">선택</option></select>
           <span class="cbox-unit">mm</span>
         </div>
-        <span class="crow-desc">클릿 슈즈 기준</span>
       </div>
     </div>
-  </div>
 
-  <!-- ⑤ 라이딩 성향 -->
-  <div class="fsec">
-    <div class="fsec-title">
-      <div class="num">5</div>
-      라이딩 성향
+    <!-- ⑤ 라이딩 성향 -->
+    <div class="fgroup">
+      <div class="fgroup-label">
+        <div class="num">5</div>
+        라이딩 성향
+      </div>
+      <div class="fg3">
+        <div class="ssel">
+          <label class="ssel-label">유연성</label>
+          <select id="flexibility">
+            <option value="">— 선택 —</option>
+            <option value="very_flexible">매우 유연 — 손바닥이 바닥에 닿음</option>
+            <option value="flexible">유연 — 손가락이 발끝에 닿음</option>
+            <option value="average" selected>보통 — 손가락이 발목 정도</option>
+            <option value="stiff">뻣뻣함 — 무릎 아래로 힘듦</option>
+          </select>
+        </div>
+        <div class="ssel">
+          <label class="ssel-label">라이딩 목적</label>
+          <select id="position">
+            <option value="">— 선택 —</option>
+            <option value="comfort">컴포트 — 편안한 업라이트</option>
+            <option value="endurance" selected>엔듀런스 — 장거리 투어링</option>
+            <option value="performance">퍼포먼스 — 빠른 주행</option>
+            <option value="racing">레이싱 — 최대 공기저항 감소</option>
+          </select>
+        </div>
+        <div class="ssel">
+          <label class="ssel-label">경험 수준</label>
+          <select id="experience">
+            <option value="">— 선택 —</option>
+            <option value="beginner">입문 — 1년 미만</option>
+            <option value="intermediate" selected>중급 — 1~3년</option>
+            <option value="advanced">상급 — 3년 이상</option>
+            <option value="racer">전문 선수</option>
+          </select>
+        </div>
+      </div>
     </div>
-    <div class="fgrid">
-      <div class="ssel">
-        <label class="ssel-label">유연성</label>
-        <select id="flexibility">
-          <option value="">— 선택하세요 —</option>
-          <option value="very_flexible">매우 유연 — 전굴 시 손바닥이 바닥에 닿음</option>
-          <option value="flexible">유연 — 전굴 시 손가락이 발끝에 닿음</option>
-          <option value="average" selected>보통 — 손가락이 발목 정도까지</option>
-          <option value="stiff">뻣뻣함 — 무릎 아래로 내려가기 어려움</option>
-        </select>
-      </div>
-      <div class="ssel">
-        <label class="ssel-label">라이딩 목적</label>
-        <select id="position">
-          <option value="">— 선택하세요 —</option>
-          <option value="comfort">컴포트 — 편안한 라이딩, 업라이트 포지션</option>
-          <option value="endurance" selected>엔듀런스 — 장거리 투어링, 중간 포지션</option>
-          <option value="performance">퍼포먼스 — 빠른 주행, 낮은 포지션</option>
-          <option value="racing">레이싱 — 최대 공기저항 감소</option>
-        </select>
-      </div>
-      <div class="ssel">
-        <label class="ssel-label">경험 수준</label>
-        <select id="experience">
-          <option value="">— 선택하세요 —</option>
-          <option value="beginner">입문 — 1년 미만</option>
-          <option value="intermediate" selected>중급 — 1~3년</option>
-          <option value="advanced">상급 — 3년 이상, 주 3회 이상</option>
-          <option value="racer">전문 선수 — 대회 출전</option>
-        </select>
-      </div>
-    </div>
-  </div>
 
-  <div class="calc-wrap">
-    <div class="err-msg" id="errMsg2"></div>
     <button class="calc-btn" onclick="calculate()">
-      <span class="calc-btn-icon">⚡</span>
-      피팅 수치 계산하기
+      ⚡ 피팅 수치 계산하기
     </button>
-  </div>
 
-  <!-- ══ RESULTS ══ -->
+  </div><!-- /form-card -->
+
+  <!-- ── RESULTS ── -->
   <div id="results">
 
-    <div class="section-sep">
-      <div class="section-sep-line"></div>
-      <div class="section-sep-text">피팅 결과</div>
-      <div class="section-sep-line"></div>
+    <div class="sep">
+      <div class="sep-line"></div>
+      <div class="sep-text">피팅 결과</div>
+      <div class="sep-line"></div>
     </div>
 
     <div class="res-header">
@@ -744,10 +604,9 @@
 
   </div>
 
-</div><!-- /wrap -->
+</div>
 
 <script>
-/* ══ SELECT OPTIONS ══ */
 const OPT = {
   height:   [150,210,1],
   weight:   [40, 130,1],
@@ -768,40 +627,35 @@ function initSelects() {
     if (!el) return;
     const first = id === 'sitBone' ? '<option value="">선택 안 함</option>' : '<option value="">선택</option>';
     let html = first;
-    for (let v = mn; v <= mx; v = Math.round((v + st) * 10) / 10) {
+    for (let v = mn; v <= mx; v = Math.round((v + st) * 10) / 10)
       html += `<option value="${v}">${v}</option>`;
-    }
     el.innerHTML = html;
   });
 }
 initSelects();
 
-/* ══ HELPERS ══ */
 const G = id => document.getElementById(id);
 const V = id => parseFloat(G(id).value) || 0;
 const S = id => G(id).value;
 
-/* ══ CALC ══ */
 function calculate() {
-  const err1 = G('errMsg'), err2 = G('errMsg2');
-  err1.style.display = err2.style.display = 'none';
+  const err = G('errMsg');
+  err.style.display = 'none';
 
   const need = [
-    ['height','키'],['inseam','인심 길이'],['torso','몸통 길이'],
-    ['arm','팔 길이'],['shoulder','어깨 넓이'],
-    ['thigh','허벅지'],['shin','정강이']
+    ['height','키'],['inseam','인심'],['torso','몸통'],
+    ['arm','팔'],['shoulder','어깨'],['thigh','허벅지'],['shin','정강이']
   ];
   const miss = need.filter(([id]) => !V(id)).map(([,n]) => n);
   if (miss.length) {
-    const msg = `⚠ 필수 항목을 선택해주세요: ${miss.join(', ')}`;
-    err1.textContent = err2.textContent = msg;
-    err1.style.display = err2.style.display = 'block';
-    err1.scrollIntoView({behavior:'smooth',block:'center'});
+    err.textContent = `⚠ 필수 항목을 선택해주세요: ${miss.join(', ')}`;
+    err.style.display = 'block';
+    err.scrollIntoView({behavior:'smooth',block:'center'});
     return;
   }
   if (!S('flexibility') || !S('position') || !S('experience')) {
-    const msg = '⚠ 라이딩 성향을 모두 선택해주세요.';
-    err2.textContent = msg; err2.style.display = 'block';
+    err.textContent = '⚠ 라이딩 성향을 모두 선택해주세요.';
+    err.style.display = 'block';
     return;
   }
 
@@ -817,16 +671,15 @@ function calculate() {
   renderCards(m, fit);
   renderFitCheck(m, fit);
   drawBike(m, fit);
-
   G('results').classList.add('show');
   setTimeout(() => G('results').scrollIntoView({behavior:'smooth',block:'start'}), 80);
 }
 
 function compute(m) {
   const BB = 27;
-  const saddleFromBB    = parseFloat((m.inseam * 0.885 + 0.3).toFixed(1));
+  const saddleFromBB     = parseFloat((m.inseam * 0.885 + 0.3).toFixed(1));
   const saddleFromGround = parseFloat((saddleFromBB + BB).toFixed(1));
-  const setback = parseFloat((Math.max(2, m.thigh * 0.1 - 0.5)).toFixed(1));
+  const setback          = parseFloat((Math.max(2, m.thigh * 0.1 - 0.5)).toFixed(1));
 
   let crankLength;
   if      (m.inseam < 74) crankLength = 165;
@@ -845,11 +698,11 @@ function compute(m) {
   const dropRng  = {comfort:[0,2],endurance:[3,6],performance:[6,10],racing:[9,14]};
   const flexF    = flexMap[m.flexibility] ?? 0.55;
   const [dMin,dMax] = dropRng[m.position] || [4,8];
-  const saddleDrop = parseFloat((dMin + (dMax-dMin)*flexF).toFixed(1));
+  const saddleDrop   = parseFloat((dMin + (dMax-dMin)*flexF).toFixed(1));
   const handlebarHeight = parseFloat((saddleFromGround - saddleDrop).toFixed(1));
 
   const posMult = {comfort:0.82,endurance:0.90,performance:0.97,racing:1.04};
-  const reach = parseFloat(((m.torso*0.48 + m.arm*0.37) * (posMult[m.position]||0.92)).toFixed(1));
+  const reach   = parseFloat(((m.torso*0.48 + m.arm*0.37) * (posMult[m.position]||0.92)).toFixed(1));
 
   const hsDist  = parseFloat(Math.sqrt(reach*reach + saddleDrop*saddleDrop).toFixed(1));
   const hsAngle = parseFloat((Math.atan2(saddleDrop, reach)*180/Math.PI).toFixed(1));
@@ -880,38 +733,37 @@ function compute(m) {
   };
 }
 
-/* ══ CARDS ══ */
 const CARDS = [
-  {n:1,c:'--c3',l:'① 안장 높이',    name:'안장의 높이',              key:'saddleFromGround', unit:'cm',
+  {n:1,c:'--c3',l:'① 안장 높이',      name:'안장의 높이',             key:'saddleFromGround', unit:'cm',
     range:f=>`권장 ${(f.saddleFromGround-.5).toFixed(1)}~${(f.saddleFromGround+.5).toFixed(1)} cm`,
     desc:f=>`BB에서 수직 ${f.saddleFromBB}cm · 지면 기준`},
-  {n:2,c:'--c4',l:'② 안장 넓이',    name:'안장의 넓이',              key:'saddleWidth',      unit:'mm',
+  {n:2,c:'--c4',l:'② 안장 넓이',      name:'안장의 넓이',             key:'saddleWidth',      unit:'mm',
     range:()=>'좌골 측정값 기준 표준 규격',
     desc:f=>f.saddleWidth<=138?'슬림 레이싱형':f.saddleWidth<=155?'올라운드형':'컴포트 와이드형'},
-  {n:3,c:'--c1',l:'③ 핸들 높이',    name:'핸들의 높이',              key:'handlebarHeight',  unit:'cm',
+  {n:3,c:'--c1',l:'③ 핸들 높이',      name:'핸들의 높이',             key:'handlebarHeight',  unit:'cm',
     range:f=>`안장 대비 ${f.saddleDrop}cm 낮음`,
-    desc:f=>`드롭(Drop): ${f.saddleDrop}cm · 지면 기준`},
-  {n:4,c:'--c2',l:'④ 핸들 넓이',    name:'핸들의 넓이',              key:'handlebarWidth',   unit:'cm',
-    range:()=>'표준 규격 36/38/40/42/44/46/48cm',
-    desc:f=>`어깨 넓이 ${f.handlebarWidth}cm 기준 최근접 규격`},
-  {n:5,c:'--c5',l:'⑤ 핸들-안장 간격', name:'핸들·안장 중심 직선거리', key:'hsDist',           unit:'cm',
+    desc:f=>`드롭 ${f.saddleDrop}cm · 지면 기준`},
+  {n:4,c:'--c2',l:'④ 핸들 넓이',      name:'핸들의 넓이',             key:'handlebarWidth',   unit:'cm',
+    range:()=>'표준 36/38/40/42/44/46/48cm',
+    desc:f=>`어깨 ${f.handlebarWidth}cm 기준 최근접 규격`},
+  {n:5,c:'--c5',l:'⑤ 핸들-안장 간격', name:'핸들·안장 직선거리',      key:'hsDist',           unit:'cm',
     range:f=>`수평 리치 ${f.reach}cm`,
     desc:f=>`√(${f.reach}² + ${f.saddleDrop}²)`},
   {n:6,c:'--c6',l:'⑥ 핸들-안장 각도', name:'핸들·안장 연결 각도',     key:'hsAngle',          unit:'°',
     range:()=>'컴포트 2-8° / 엔듀런스 5-12° / 레이싱 10-20°',
     desc:f=>`수평에서 ${f.hsAngle}° 아래`},
   {n:7,c:'--c7',l:'⑦ 크랭크-안장 각도',name:'크랭크·안장 연결 각도',  key:'csAngle',          unit:'°',
-    range:()=>'일반 2~5° (시트튜브 73° 기준)',
+    range:()=>'일반 2~5°',
     desc:f=>`수직에서 ${f.csAngle}° 후방 · 세트백 ${f.setback}cm`},
   {n:8,c:'--c8',l:'⑧ 크랭크-안장 거리',name:'크랭크·안장 중심 거리',  key:'csDistance',       unit:'cm',
-    range:f=>`인심의 약 ${(f.csDistance/m=>f.csDistance).toFixed(0)}% (88~89%)`,
-    desc:f=>`BB 축 → 안장 중심 수직 거리`},
-  {n:9,c:'--c9',l:'⑨ 안장 각도',    name:'안장의 기울기 각도',       key:'saddleAngle',      unit:'°',
+    range:()=>'인심의 약 88~89%',
+    desc:()=>'BB 축 → 안장 중심 수직 거리'},
+  {n:9,c:'--c9',l:'⑨ 안장 각도',      name:'안장의 기울기 각도',      key:'saddleAngle',      unit:'°',
     range:()=>'권장 -1° ~ +3°',
     desc:()=>'0° 수평 권장. 전방 통증 시 코 1~2° 올림'},
-  {n:10,c:'--c10',l:'⑩ 크랭크암 길이',name:'크랭크암의 길이',         key:'crankLength',      unit:'mm',
-    range:()=>'표준 165/167.5/170/172.5/175/177.5/180mm',
-    desc:f=>`인심 ${f.saddleFromBB+f.BB > 90?'긴':'보통'} 편 기준`},
+  {n:10,c:'--c10',l:'⑩ 크랭크암 길이', name:'크랭크암의 길이',         key:'crankLength',      unit:'mm',
+    range:()=>'표준 165~180mm',
+    desc:f=>`인심 ${m=>m} 기준`},
 ];
 
 function renderCards(m, fit) {
@@ -935,39 +787,39 @@ function renderCards(m, fit) {
 function renderFitCheck(m, fit) {
   const checks = [
     {
-      label:'안장 높이',
       ok: Math.abs(fit.saddleFromBB - m.inseam * 0.885) < 1.5,
       warn: Math.abs(fit.saddleFromBB - m.inseam * 0.885) < 3,
       msg: ok => ok
         ? `안장 높이 ${fit.saddleFromGround}cm — 인심 대비 적정 범위 (LeMond 공식)`
-        : `안장 높이 재확인 권장 — 인심 측정값을 다시 확인해보세요`
+        : `안장 높이 재확인 권장 — 인심 측정값을 다시 확인해보세요`,
+      label:'안장 높이'
     },
     {
-      label:'드롭',
       ok: fit.saddleDrop >= 2 && fit.saddleDrop <= 12,
       warn: fit.saddleDrop < 15,
       msg: ok => ok
         ? `드롭 ${fit.saddleDrop}cm — 포지션 및 유연성에 맞는 적절한 드롭`
-        : `드롭 ${fit.saddleDrop}cm — 유연성 향상 후 점진적으로 낮추기 권장`
+        : `드롭 ${fit.saddleDrop}cm — 유연성 향상 후 점진적으로 낮추기 권장`,
+      label:'드롭'
     },
     {
-      label:'크랭크암',
       ok: true, warn: false,
-      msg: () => `${fit.crankLength}mm — 인심 ${m.inseam}cm 기준 표준 크랭크암 길이`
+      msg: () => `${fit.crankLength}mm — 인심 ${m.inseam}cm 기준 표준 크랭크암 길이`,
+      label:'크랭크암'
     },
     {
-      label:'핸들바 넓이',
       ok: Math.abs(fit.handlebarWidth - m.shoulder) <= 2,
       warn: Math.abs(fit.handlebarWidth - m.shoulder) <= 4,
       msg: ok => ok
         ? `${fit.handlebarWidth}cm — 어깨 넓이(${m.shoulder}cm)에 최적 매칭`
-        : `${fit.handlebarWidth}cm — 어깨 넓이 대비 차이 있음. 실제 착용 후 조정 권장`
+        : `${fit.handlebarWidth}cm — 어깨 넓이 대비 차이 있음. 실제 착용 후 조정 권장`,
+      label:'핸들바 넓이'
     },
     {
-      label:'안장 세트백',
       ok: fit.setback >= 2 && fit.setback <= 8,
       warn: fit.setback <= 10,
-      msg: ok => `세트백 ${fit.setback}cm — ${ok ? 'KOPS 기준 정상 범위' : '전문 피터와 정밀 조정 권장'}`
+      msg: ok => `세트백 ${fit.setback}cm — ${ok ? 'KOPS 기준 정상 범위' : '전문 피터와 정밀 조정 권장'}`,
+      label:'안장 세트백'
     },
   ];
 
@@ -980,34 +832,24 @@ function renderFitCheck(m, fit) {
   }).join('');
 }
 
-/* ══ SVG VISUALIZATION ══ */
 function drawBike(m, fit) {
   const SC=2.8, W=860, H=520, GY=468, WR=34*SC;
   const rX=130, rY=GY-WR, fX=rX+100*SC, fY=rY;
   const bbX=rX+41*SC, bbY=GY-fit.BB*SC;
+  const sdX=bbX-fit.setback*SC, sdY=GY-fit.saddleFromGround*SC;
+  const barX=sdX+fit.reach*SC, barY=GY-fit.handlebarHeight*SC;
 
-  const sdX=bbX-fit.setback*SC;
-  const sdY=GY-fit.saddleFromGround*SC;
-  const barX=sdX+fit.reach*SC;
-  const barY=GY-fit.handlebarHeight*SC;
-
-  const stA=73*Math.PI/180;
-  const stLen=fit.saddleFromBB+6;
-  const stTopX=bbX-stLen*Math.cos(stA)*SC;
-  const stTopY=bbY-stLen*Math.sin(stA)*SC;
-
+  const stA=73*Math.PI/180, stLen=fit.saddleFromBB+6;
+  const stTopX=bbX-stLen*Math.cos(stA)*SC, stTopY=bbY-stLen*Math.sin(stA)*SC;
   const stemLen=9*SC;
   const htTopX=barX-stemLen, htTopY=barY+SC;
   const htLen=13, htA=73*Math.PI/180;
-  const htBotX=htTopX+htLen*Math.cos(htA)*SC;
-  const htBotY=htTopY+htLen*Math.sin(htA)*SC;
-
+  const htBotX=htTopX+htLen*Math.cos(htA)*SC, htBotY=htTopY+htLen*Math.sin(htA)*SC;
   const crankCm=fit.crankLength/10;
   const pedX=bbX, pedY=bbY+crankCm*SC;
 
   const leanMap={comfort:18,endurance:35,performance:46,racing:56};
   const leanR=(leanMap[m.position]||38)*Math.PI/180;
-
   const hipX=sdX, hipY=sdY;
   const shouldX=hipX+m.torso*SC*Math.sin(leanR);
   const shouldY=hipY-m.torso*SC*Math.cos(leanR);
@@ -1022,19 +864,19 @@ function drawBike(m, fit) {
   const footX=bbX+2*SC, footY=pedY;
 
   const wheel=(cx,cy,r)=>{
-    let w=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#2A3349" stroke-width="5"/>`;
-    for(let i=0;i<16;i++){const a=i*Math.PI/8;w+=`<line x1="${cx}" y1="${cy}" x2="${cx+r*.92*Math.cos(a)}" y2="${cy+r*.92*Math.sin(a)}" stroke="#1F2638" stroke-width="1.2"/>`;}
-    w+=`<circle cx="${cx}" cy="${cy}" r="${r*.85}" fill="none" stroke="#3D4F7A" stroke-width="2.5"/>`;
-    w+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#4A5F8A" stroke-width="1.5"/>`;
-    w+=`<circle cx="${cx}" cy="${cy}" r="7" fill="#3D4F7A"/>`;
+    let w=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#B0BAD0" stroke-width="5"/>`;
+    for(let i=0;i<16;i++){const a=i*Math.PI/8;w+=`<line x1="${cx}" y1="${cy}" x2="${cx+r*.92*Math.cos(a)}" y2="${cy+r*.92*Math.sin(a)}" stroke="#C8D4E8" stroke-width="1.2"/>`;}
+    w+=`<circle cx="${cx}" cy="${cy}" r="${r*.85}" fill="none" stroke="#7A8DB0" stroke-width="2.5"/>`;
+    w+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#9AAAC8" stroke-width="1.5"/>`;
+    w+=`<circle cx="${cx}" cy="${cy}" r="7" fill="#7A8DB0"/>`;
     return w;
   };
 
-  const fr='#6B7FBB', fw=5;
-  let s=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="background:#080B14;border-radius:8px">`;
-  s+=`<line x1="0" y1="${GY}" x2="${W}" y2="${GY}" stroke="#1F2638" stroke-width="1.5"/>`;
-  s+=`<rect x="0" y="${GY}" width="${W}" height="${H-GY}" fill="#0A0D18"/>`;
-  s+=`<ellipse cx="${(rX+fX)/2}" cy="${GY+4}" rx="165" ry="7" fill="rgba(0,0,0,.3)"/>`;
+  const fr='#4A6ACF', fw=5;
+  let s=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="background:#EEF2FF;border-radius:8px">`;
+  s+=`<line x1="0" y1="${GY}" x2="${W}" y2="${GY}" stroke="#C8D4E8" stroke-width="1.5"/>`;
+  s+=`<rect x="0" y="${GY}" width="${W}" height="${H-GY}" fill="#DDE3F0"/>`;
+  s+=`<ellipse cx="${(rX+fX)/2}" cy="${GY+4}" rx="165" ry="7" fill="rgba(0,0,0,.06)"/>`;
   s+=wheel(rX,rY,WR); s+=wheel(fX,fY,WR);
   s+=`<line x1="${rX}" y1="${rY}" x2="${bbX}" y2="${bbY}" stroke="${fr}" stroke-width="${fw}" stroke-linecap="round"/>`;
   s+=`<line x1="${rX}" y1="${rY}" x2="${stTopX}" y2="${stTopY}" stroke="${fr}" stroke-width="${fw-1}" stroke-linecap="round"/>`;
@@ -1044,20 +886,20 @@ function drawBike(m, fit) {
   s+=`<line x1="${htTopX}" y1="${htTopY}" x2="${htBotX}" y2="${htBotY}" stroke="${fr}" stroke-width="${fw+3}" stroke-linecap="round"/>`;
   s+=`<line x1="${htBotX}" y1="${htBotY}" x2="${fX}" y2="${fY}" stroke="${fr}" stroke-width="${fw-1}" stroke-linecap="round"/>`;
   s+=`<line x1="${htTopX}" y1="${htTopY}" x2="${barX}" y2="${barY}" stroke="${fr}" stroke-width="${fw}" stroke-linecap="round"/>`;
-  s+=`<circle cx="${bbX}" cy="${bbY}" r="7" fill="${fr}"/><circle cx="${bbX}" cy="${bbY}" r="3.5" fill="#080B14"/>`;
-  s+=`<line x1="${bbX}" y1="${bbY}" x2="${pedX}" y2="${pedY}" stroke="#8090C0" stroke-width="6" stroke-linecap="round"/>`;
-  s+=`<line x1="${bbX}" y1="${bbY}" x2="${bbX-2}" y2="${bbY-crankCm*SC}" stroke="#4A5580" stroke-width="5" stroke-linecap="round" opacity=".5"/>`;
-  s+=`<rect x="${pedX-10}" y="${pedY-4}" width="20" height="8" rx="3" fill="#8090C0"/>`;
+  s+=`<circle cx="${bbX}" cy="${bbY}" r="7" fill="${fr}"/><circle cx="${bbX}" cy="${bbY}" r="3.5" fill="#EEF2FF"/>`;
+  s+=`<line x1="${bbX}" y1="${bbY}" x2="${pedX}" y2="${pedY}" stroke="#6080C0" stroke-width="6" stroke-linecap="round"/>`;
+  s+=`<line x1="${bbX}" y1="${bbY}" x2="${bbX-2}" y2="${bbY-crankCm*SC}" stroke="#8090B8" stroke-width="5" stroke-linecap="round" opacity=".5"/>`;
+  s+=`<rect x="${pedX-10}" y="${pedY-4}" width="20" height="8" rx="3" fill="#6080C0"/>`;
   const sdW=fit.saddleWidth/10*SC*.5;
-  s+=`<ellipse cx="${sdX}" cy="${sdY}" rx="${sdW}" ry="${3*SC*.38}" fill="#9AAAD0"/>`;
-  s+=`<line x1="${sdX-sdW*.6}" y1="${sdY+3}" x2="${sdX}" y2="${sdY+3*SC*.5}" stroke="#5B6B99" stroke-width="2"/>`;
-  s+=`<line x1="${sdX}" y1="${sdY+3*SC*.5}" x2="${bbX}" y2="${bbY}" stroke="#3D4A6B" stroke-width="1.5" stroke-dasharray="4,3" opacity=".5"/>`;
+  s+=`<ellipse cx="${sdX}" cy="${sdY}" rx="${sdW}" ry="${3*SC*.38}" fill="#7090C0"/>`;
+  s+=`<line x1="${sdX-sdW*.6}" y1="${sdY+3}" x2="${sdX}" y2="${sdY+3*SC*.5}" stroke="#4A6ACF" stroke-width="2"/>`;
+  s+=`<line x1="${sdX}" y1="${sdY+3*SC*.5}" x2="${bbX}" y2="${bbY}" stroke="#8090B0" stroke-width="1.5" stroke-dasharray="4,3" opacity=".5"/>`;
   const hbR=2.2*SC, hbHW=fit.handlebarWidth/2*SC*.4;
-  s+=`<path d="M${barX-hbHW},${barY} Q${barX-hbHW},${barY+hbR*1.2} ${barX-hbHW+hbR},${barY+hbR*1.4}" fill="none" stroke="#9AAAD0" stroke-width="4.5" stroke-linecap="round"/>`;
-  s+=`<line x1="${barX-hbHW}" y1="${barY}" x2="${barX+hbHW}" y2="${barY}" stroke="#9AAAD0" stroke-width="4.5" stroke-linecap="round"/>`;
-  s+=`<path d="M${barX+hbHW},${barY} Q${barX+hbHW},${barY+hbR*1.2} ${barX+hbHW-hbR},${barY+hbR*1.4}" fill="none" stroke="#9AAAD0" stroke-width="4.5" stroke-linecap="round"/>`;
+  s+=`<path d="M${barX-hbHW},${barY} Q${barX-hbHW},${barY+hbR*1.2} ${barX-hbHW+hbR},${barY+hbR*1.4}" fill="none" stroke="#6080C0" stroke-width="4.5" stroke-linecap="round"/>`;
+  s+=`<line x1="${barX-hbHW}" y1="${barY}" x2="${barX+hbHW}" y2="${barY}" stroke="#6080C0" stroke-width="4.5" stroke-linecap="round"/>`;
+  s+=`<path d="M${barX+hbHW},${barY} Q${barX+hbHW},${barY+hbR*1.2} ${barX+hbHW-hbR},${barY+hbR*1.4}" fill="none" stroke="#6080C0" stroke-width="4.5" stroke-linecap="round"/>`;
 
-  const bc='#C8D4FF',jr=5;
+  const bc='#3B5FC0', jr=5;
   s+=`<line x1="${hipX}" y1="${hipY}" x2="${shouldX}" y2="${shouldY}" stroke="${bc}" stroke-width="7" stroke-linecap="round"/>`;
   s+=`<line x1="${shouldX}" y1="${shouldY}" x2="${elbX}" y2="${elbY}" stroke="${bc}" stroke-width="5" stroke-linecap="round"/>`;
   s+=`<line x1="${elbX}" y1="${elbY}" x2="${barX}" y2="${barY}" stroke="${bc}" stroke-width="5" stroke-linecap="round"/>`;
@@ -1065,11 +907,11 @@ function drawBike(m, fit) {
   s+=`<line x1="${kneeX}" y1="${kneeY}" x2="${footX}" y2="${footY}" stroke="${bc}" stroke-width="5" stroke-linecap="round"/>`;
   s+=`<circle cx="${headX}" cy="${headY-8}" r="${9*SC/4}" fill="${bc}"/>`;
   [[hipX,hipY],[shouldX,shouldY],[elbX,elbY],[kneeX,kneeY],[footX,footY]].forEach(([x,y])=>{
-    s+=`<circle cx="${x}" cy="${y}" r="${jr}" fill="#080B14" stroke="${bc}" stroke-width="2"/>`;
+    s+=`<circle cx="${x}" cy="${y}" r="${jr}" fill="#EEF2FF" stroke="${bc}" stroke-width="2"/>`;
   });
 
   const tx=(x,y,txt,col,sz=10.5)=>
-    `<text x="${x}" y="${y}" fill="${col}" font-size="${sz}" font-weight="700" text-anchor="middle" dominant-baseline="middle" style="paint-order:stroke;stroke:#080B14;stroke-width:3;font-family:Inter,system-ui">${txt}</text>`;
+    `<text x="${x}" y="${y}" fill="${col}" font-size="${sz}" font-weight="700" text-anchor="middle" dominant-baseline="middle" style="paint-order:stroke;stroke:#EEF2FF;stroke-width:3;font-family:Inter,system-ui">${txt}</text>`;
 
   const vdim=(x,y1,y2,label,col)=>{
     let d=`<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="${col}" stroke-width="1.8" opacity=".9"/>`;
@@ -1079,58 +921,58 @@ function drawBike(m, fit) {
     return d;
   };
 
-  s+=vdim(sdX+32, sdY, GY, `③ ${fit.saddleFromGround}cm`, '#06D6A0');
-  s+=vdim(barX+38, barY, GY, `① ${fit.handlebarHeight}cm`, '#FF6370');
-  s+=vdim(bbX-30, sdY, bbY, `⑧ ${fit.csDistance}cm`, '#FF9F1C');
+  s+=vdim(sdX+32, sdY, GY, `③ ${fit.saddleFromGround}cm`, '#059669');
+  s+=vdim(barX+38, barY, GY, `① ${fit.handlebarHeight}cm`, '#DC2626');
+  s+=vdim(bbX-30, sdY, bbY, `⑧ ${fit.csDistance}cm`, '#D97706');
 
   const ang=Math.atan2(barY-sdY, barX-sdX);
   const mx=(sdX+barX)/2, my=(sdY+barY)/2;
   const nx=-Math.sin(ang), ny=Math.cos(ang);
-  s+=`<line x1="${sdX}" y1="${sdY}" x2="${barX}" y2="${barY}" stroke="#4895EF" stroke-width="1.8" stroke-dasharray="6,3" opacity=".8"/>`;
-  s+=`<circle cx="${sdX}" cy="${sdY}" r="3.5" fill="#4895EF"/>`;
-  s+=`<circle cx="${barX}" cy="${barY}" r="3.5" fill="#4895EF"/>`;
-  s+=tx(mx+nx*14, my+ny*14, `⑤ ${fit.hsDist}cm`, '#4895EF');
+  s+=`<line x1="${sdX}" y1="${sdY}" x2="${barX}" y2="${barY}" stroke="#2563EB" stroke-width="1.8" stroke-dasharray="6,3" opacity=".8"/>`;
+  s+=`<circle cx="${sdX}" cy="${sdY}" r="3.5" fill="#2563EB"/>`;
+  s+=`<circle cx="${barX}" cy="${barY}" r="3.5" fill="#2563EB"/>`;
+  s+=tx(mx+nx*14, my+ny*14, `⑤ ${fit.hsDist}cm`, '#2563EB');
 
   {const r=34,a1=-Math.PI/2,a2=-Math.atan2(sdY-bbY,sdX-bbX);
-  s+=`<path d="M${bbX+r*Math.cos(a1)},${bbY+r*Math.sin(a1)} A${r},${r} 0 0,1 ${bbX+r*Math.cos(a2)},${bbY+r*Math.sin(a2)}" fill="none" stroke="#00BBF9" stroke-width="2"/>`;
-  s+=tx(bbX-40, bbY-22, `⑦ ${fit.csAngle}°`, '#00BBF9', 10);}
+  s+=`<path d="M${bbX+r*Math.cos(a1)},${bbY+r*Math.sin(a1)} A${r},${r} 0 0,1 ${bbX+r*Math.cos(a2)},${bbY+r*Math.sin(a2)}" fill="none" stroke="#0891B2" stroke-width="2"/>`;
+  s+=tx(bbX-40, bbY-22, `⑦ ${fit.csAngle}°`, '#0891B2', 10);}
 
   {const r=30,ax=Math.atan2(barY-sdY,barX-sdX);
-  s+=`<path d="M${sdX+r},${sdY} A${r},${r} 0 0,1 ${sdX+r*Math.cos(ax)},${sdY+r*Math.sin(ax)}" fill="none" stroke="#9B5DE5" stroke-width="2"/>`;
-  s+=tx(sdX+42, sdY-14, `⑥ ${fit.hsAngle}°`, '#9B5DE5', 10);}
+  s+=`<path d="M${sdX+r},${sdY} A${r},${r} 0 0,1 ${sdX+r*Math.cos(ax)},${sdY+r*Math.sin(ax)}" fill="none" stroke="#7C3AED" stroke-width="2"/>`;
+  s+=tx(sdX+42, sdY-14, `⑥ ${fit.hsAngle}°`, '#7C3AED', 10);}
 
-  s+=tx((bbX+pedX)/2+16, (bbY+pedY)/2, `⑩ ${fit.crankLength}mm`, '#F72585', 10);
-  s+=tx(sdX-sdW-6, sdY-14, `⑨ ${fit.saddleAngle}°`, '#2EC4B6', 10);
+  s+=tx((bbX+pedX)/2+16, (bbY+pedY)/2, `⑩ ${fit.crankLength}mm`, '#DB2777', 10);
+  s+=tx(sdX-sdW-6, sdY-14, `⑨ ${fit.saddleAngle}°`, '#0D9488', 10);
 
-  const inX=W-148,inY=28,inW=128,inH=92;
-  s+=`<rect x="${inX}" y="${inY}" width="${inW}" height="${inH}" rx="8" fill="#0D1018" stroke="#1F2638" stroke-width="1"/>`;
+  const inX=W-148, inY=28, inW=128, inH=92;
+  s+=`<rect x="${inX}" y="${inY}" width="${inW}" height="${inH}" rx="8" fill="rgba(255,255,255,.85)" stroke="#C8D4E8" stroke-width="1"/>`;
   s+=tx(inX+inW/2, inY+14, '핸들바 (전면)', '#6B7FBB', 9);
   const hbCX=inX+inW/2, hbCY=inY+inH/2+6, hbHW2=Math.min(48,fit.handlebarWidth*1.8);
-  s+=`<path d="M${hbCX-hbHW2},${hbCY-6} Q${hbCX-hbHW2},${hbCY+9} ${hbCX-hbHW2+9},${hbCY+13}" fill="none" stroke="#9AAAD0" stroke-width="4" stroke-linecap="round"/>`;
-  s+=`<line x1="${hbCX-hbHW2}" y1="${hbCY-6}" x2="${hbCX+hbHW2}" y2="${hbCY-6}" stroke="#9AAAD0" stroke-width="4" stroke-linecap="round"/>`;
-  s+=`<path d="M${hbCX+hbHW2},${hbCY-6} Q${hbCX+hbHW2},${hbCY+9} ${hbCX+hbHW2-9},${hbCY+13}" fill="none" stroke="#9AAAD0" stroke-width="4" stroke-linecap="round"/>`;
-  s+=`<line x1="${hbCX-hbHW2}" y1="${hbCY-20}" x2="${hbCX+hbHW2}" y2="${hbCY-20}" stroke="#FFD166" stroke-width="1.5"/>`;
-  s+=`<line x1="${hbCX-hbHW2}" y1="${hbCY-25}" x2="${hbCX-hbHW2}" y2="${hbCY-15}" stroke="#FFD166" stroke-width="1.5"/>`;
-  s+=`<line x1="${hbCX+hbHW2}" y1="${hbCY-25}" x2="${hbCX+hbHW2}" y2="${hbCY-15}" stroke="#FFD166" stroke-width="1.5"/>`;
-  s+=tx(hbCX, hbCY-30, `④ ${fit.handlebarWidth}cm`, '#FFD166', 10);
+  s+=`<path d="M${hbCX-hbHW2},${hbCY-6} Q${hbCX-hbHW2},${hbCY+9} ${hbCX-hbHW2+9},${hbCY+13}" fill="none" stroke="#4A6ACF" stroke-width="4" stroke-linecap="round"/>`;
+  s+=`<line x1="${hbCX-hbHW2}" y1="${hbCY-6}" x2="${hbCX+hbHW2}" y2="${hbCY-6}" stroke="#4A6ACF" stroke-width="4" stroke-linecap="round"/>`;
+  s+=`<path d="M${hbCX+hbHW2},${hbCY-6} Q${hbCX+hbHW2},${hbCY+9} ${hbCX+hbHW2-9},${hbCY+13}" fill="none" stroke="#4A6ACF" stroke-width="4" stroke-linecap="round"/>`;
+  s+=`<line x1="${hbCX-hbHW2}" y1="${hbCY-20}" x2="${hbCX+hbHW2}" y2="${hbCY-20}" stroke="#D97706" stroke-width="1.5"/>`;
+  s+=`<line x1="${hbCX-hbHW2}" y1="${hbCY-25}" x2="${hbCX-hbHW2}" y2="${hbCY-15}" stroke="#D97706" stroke-width="1.5"/>`;
+  s+=`<line x1="${hbCX+hbHW2}" y1="${hbCY-25}" x2="${hbCX+hbHW2}" y2="${hbCY-15}" stroke="#D97706" stroke-width="1.5"/>`;
+  s+=tx(hbCX, hbCY-30, `④ ${fit.handlebarWidth}cm`, '#D97706', 10);
 
-  const siX=W-148,siY=inY+inH+10,siW=128,siH=74;
-  s+=`<rect x="${siX}" y="${siY}" width="${siW}" height="${siH}" rx="8" fill="#0D1018" stroke="#1F2638" stroke-width="1"/>`;
+  const siX=W-148, siY=inY+inH+10, siW=128, siH=74;
+  s+=`<rect x="${siX}" y="${siY}" width="${siW}" height="${siH}" rx="8" fill="rgba(255,255,255,.85)" stroke="#C8D4E8" stroke-width="1"/>`;
   s+=tx(siX+siW/2, siY+13, '안장 (상면)', '#6B7FBB', 9);
   const sCX=siX+siW/2, sCY=siY+siH/2+6, sHW=Math.min(46,fit.saddleWidth/10*1.4);
-  s+=`<ellipse cx="${sCX}" cy="${sCY}" rx="${sHW*.55}" ry="${sHW*1.1}" fill="none" stroke="#C77DFF" stroke-width="2.5"/>`;
-  s+=`<line x1="${sCX-sHW*.55}" y1="${sCY-sHW*.7}" x2="${sCX+sHW*.55}" y2="${sCY-sHW*.7}" stroke="#C77DFF" stroke-width="1.5"/>`;
-  s+=tx(sCX, sCY-sHW*.7-7, `② ${fit.saddleWidth}mm`, '#C77DFF', 10);
+  s+=`<ellipse cx="${sCX}" cy="${sCY}" rx="${sHW*.55}" ry="${sHW*1.1}" fill="none" stroke="#7C3AED" stroke-width="2.5"/>`;
+  s+=`<line x1="${sCX-sHW*.55}" y1="${sCY-sHW*.7}" x2="${sCX+sHW*.55}" y2="${sCY-sHW*.7}" stroke="#7C3AED" stroke-width="1.5"/>`;
+  s+=tx(sCX, sCY-sHW*.7-7, `② ${fit.saddleWidth}mm`, '#7C3AED', 10);
 
   s+=`</svg>`;
   G('svgWrap').innerHTML = s;
 
   G('vizLeg').innerHTML = [
-    ['#FF6370','① 핸들 높이'],['#FFD166','④ 핸들 넓이'],
-    ['#06D6A0','③ 안장 높이'],['#C77DFF','② 안장 넓이'],
-    ['#4895EF','⑤ 핸들-안장 간격'],['#9B5DE5','⑥ 핸들-안장 각도'],
-    ['#00BBF9','⑦ 크랭크-안장 각도'],['#FF9F1C','⑧ 크랭크-안장 거리'],
-    ['#2EC4B6','⑨ 안장 각도'],['#F72585','⑩ 크랭크암 길이'],
+    ['#DC2626','① 핸들 높이'],['#D97706','④ 핸들 넓이'],
+    ['#059669','③ 안장 높이'],['#7C3AED','② 안장 넓이'],
+    ['#2563EB','⑤ 핸들-안장 간격'],['#7C3AED','⑥ 핸들-안장 각도'],
+    ['#0891B2','⑦ 크랭크-안장 각도'],['#D97706','⑧ 크랭크-안장 거리'],
+    ['#0D9488','⑨ 안장 각도'],['#DB2777','⑩ 크랭크암 길이'],
   ].map(([c,l])=>`<div class="vleg"><div class="vdot" style="background:${c}"></div>${l}</div>`).join('');
 }
 </script>
