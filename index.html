@@ -343,14 +343,21 @@ const OPT = {
   sitBone:  [80, 185,5],
   shoeSize: [220,315,5],
 };
+const DEFAULTS = {
+  height: 176, weight: 85, age: 52,
+  inseam: 78, thigh: 49, shin: 35,
+  torso: 63, arm: 76, shoulder: 44,
+  sitBone: 140, shoeSize: 265,
+};
 function initSelects() {
   Object.entries(OPT).forEach(([id,[mn,mx,st]]) => {
     const el = document.getElementById(id);
     if (!el) return;
     const first = id==='sitBone' ? '<option value="">선택 안 함</option>' : '<option value="">선택</option>';
     let html = first;
+    const def = DEFAULTS[id];
     for (let v=mn; v<=mx; v=Math.round((v+st)*10)/10)
-      html += `<option value="${v}">${v}</option>`;
+      html += `<option value="${v}"${def!==undefined && v===def ? ' selected' : ''}>${v}</option>`;
     el.innerHTML = html;
   });
 }
@@ -504,8 +511,8 @@ function renderFitCheck(m, fit) {
 
 /* ══ SVG VISUALIZATION ══ */
 function drawBike(m, fit) {
-  const SC=2.8, W=860, H=530, GY=470, WR=36*SC;
-  const rX=138, rY=GY-WR, fX=rX+100*SC, fY=rY;
+  const SC=2.8, W=880, H=540, GY=478, WR=37*SC;
+  const rX=142, rY=GY-WR, fX=rX+100*SC, fY=rY;
   const bbX=rX+42*SC, bbY=GY-fit.BB*SC;
   const sdX=bbX-fit.setback*SC, sdY=GY-fit.saddleFromGround*SC;
   const barX=sdX+fit.reach*SC, barY=GY-fit.handlebarHeight*SC;
