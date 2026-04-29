@@ -329,6 +329,8 @@
 
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
 <script>
 const OPT = {
   height:   [150,210,1],
@@ -509,261 +511,379 @@ function renderFitCheck(m, fit) {
   }).join('');
 }
 
-/* ══ SVG VISUALIZATION ══ */
+/* ══ 3D VISUALIZATION (Three.js) ══ */
+let _three = null;
+function disposeThree() {
+  if (!_three) return;
+  cancelAnimationFrame(_three.rafId);
+  _three.scene.traverse(o => {
+    if (o.geometry) o.geometry.dispose();
+    if (o.material) { (Array.isArray(o.material) ? o.material : [o.material]).forEach(mt => mt.dispose()); }
+  });
+  _three.renderer.dispose();
+  _three = null;
+}
 function drawBike(m, fit) {
-  const SC=2.8, W=880, H=540, GY=478, WR=37*SC;
-  const rX=142, rY=GY-WR, fX=rX+100*SC, fY=rY;
-  const bbX=rX+42*SC, bbY=GY-fit.BB*SC;
-  const sdX=bbX-fit.setback*SC, sdY=GY-fit.saddleFromGround*SC;
-  const barX=sdX+fit.reach*SC, barY=GY-fit.handlebarHeight*SC;
+  const wrap = G('svgWrap');
+  wrap.innerHTML = '';
+  disposeThree();
+  const W = Math.min(wrap.clientWidth || 860, 860), H = 520;
 
-  const stA=73*Math.PI/180, stLen=fit.saddleFromBB+6;
-  const stTopX=bbX-stLen*Math.cos(stA)*SC, stTopY=bbY-stLen*Math.sin(stA)*SC;
-  const stemLen=8*SC;
-  const htTopX=barX-stemLen, htTopY=barY+1.5*SC;
-  const htLen=12, htA=73*Math.PI/180;
-  const htBotX=htTopX+htLen*Math.cos(htA)*SC, htBotY=htTopY+htLen*Math.sin(htA)*SC;
-  const crankCm=fit.crankLength/10;
-  const pedX=bbX, pedY=bbY+crankCm*SC;
+  // ── Scene & Renderer ──
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xE8EEF8);
+  scene.fog = new THREE.FogExp2(0xE8EEF8, 0.003);
 
-  const leanMap={comfort:16,endurance:33,performance:45,racing:55};
-  const leanR=(leanMap[m.position]||35)*Math.PI/180;
-  const hipX=sdX, hipY=sdY;
-  const shouldX=hipX+m.torso*SC*Math.sin(leanR);
-  const shouldY=hipY-m.torso*SC*Math.cos(leanR);
-  const headR=10*SC/3.5;
-  const neckLen=3.8*SC;
-  const neckBaseX=shouldX+neckLen*0.25*Math.sin(leanR);
-  const neckBaseY=shouldY-neckLen*0.4;
-  const headCX=neckBaseX+headR*0.3*Math.sin(leanR+0.2);
-  const headCY=neckBaseY-headR*1.1;
-  const elbX=(shouldX+barX)*0.5+3*SC*Math.sin(leanR);
-  const elbY=(shouldY+barY)*0.5+6*SC;
-  const thighA=leanR-0.5;
-  const kneeX=hipX+m.thigh*SC*Math.sin(thighA);
-  const kneeY=hipY+m.thigh*SC*Math.cos(thighA);
-  const footX=bbX+1.5*SC, footY=pedY;
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(W, H);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
+  renderer.domElement.style.cssText = 'border-radius:10px;display:block;cursor:grab;width:100%;';
+  wrap.appendChild(renderer.domElement);
 
-  /* ── colours ── */
-  const FRAME='#C0392B', FRAME_D='#922B21', FRAME_H='#E74C3C';
-  const TIRE='#1C2833', RIM='#5D6D7E', HUB='#2E4057';
-  const JERSEY='#1565C0', SHORTS='#1A1A2E', SKIN='#E8A87C';
-  const HELMET='#F39C12', HELMET_D='#D68910';
-  const SADDLE='#2C3E50', METAL='#7F8C8D';
+  const hint = document.createElement('div');
+  hint.style.cssText = 'text-align:center;font-size:0.7rem;color:#9CA3AF;margin-top:6px;';
+  hint.textContent = '🖱 드래그: 회전  |  스크롤: 확대/축소  |  우클릭: 이동';
+  wrap.appendChild(hint);
 
-  let s=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="background:#EEF2FF;border-radius:8px">`;
+  // ── Camera ──
+  const camera = new THREE.PerspectiveCamera(38, W / H, 0.1, 1200);
+  camera.position.set(85, 95, 160);
+  camera.lookAt(50, 52, 0);
 
-  /* defs */
-  s+=`<defs>
-    <linearGradient id="fgrad" x1="0%" y1="0%" x2="30%" y2="100%">
-      <stop offset="0%" stop-color="${FRAME_H}"/><stop offset="100%" stop-color="${FRAME_D}"/>
-    </linearGradient>
-    <linearGradient id="jerseyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#1976D2"/><stop offset="100%" stop-color="#0D47A1"/>
-    </linearGradient>
-    <radialGradient id="skinGrad" cx="40%" cy="35%">
-      <stop offset="0%" stop-color="#F0C090"/><stop offset="100%" stop-color="#D4956A"/>
-    </radialGradient>
-    <filter id="dropshadow"><feDropShadow dx="1" dy="2" stdDeviation="2.5" flood-opacity="0.12"/></filter>
-  </defs>`;
+  // ── Lights ──
+  scene.add(new THREE.AmbientLight(0xffffff, 0.52));
+  const sun = new THREE.DirectionalLight(0xFFF9F0, 1.15);
+  sun.position.set(70, 220, 130);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.camera.left = -180; sun.shadow.camera.right = 220;
+  sun.shadow.camera.top = 180;  sun.shadow.camera.bottom = -30;
+  sun.shadow.camera.near = 5;   sun.shadow.camera.far = 700;
+  scene.add(sun);
+  const fill = new THREE.DirectionalLight(0xC4D8FF, 0.38);
+  fill.position.set(-90, 70, -110); scene.add(fill);
+  const back = new THREE.DirectionalLight(0xFFE8C8, 0.22);
+  back.position.set(20, 40, -150); scene.add(back);
 
-  /* ground */
-  s+=`<rect x="0" y="0" width="${W}" height="${H}" fill="#EEF2FF"/>`;
-  s+=`<rect x="0" y="${GY}" width="${W}" height="${H-GY}" fill="#DDE6F5"/>`;
-  s+=`<line x1="0" y1="${GY}" x2="${W}" y2="${GY}" stroke="#B0C0DC" stroke-width="2"/>`;
-  /* subtle road markings */
-  for(let i=60;i<W;i+=80) s+=`<line x1="${i}" y1="${GY+8}" x2="${i+40}" y2="${GY+8}" stroke="#C8D4E8" stroke-width="1.5"/>`;
-  s+=`<ellipse cx="${(rX+fX)/2}" cy="${GY+3}" rx="175" ry="9" fill="rgba(0,0,0,.07)"/>`;
+  // ── OrbitControls ──
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.target.set(50, 52, 0);
+  controls.enableDamping = true; controls.dampingFactor = 0.06;
+  controls.maxPolarAngle = Math.PI * 0.76;
+  controls.minDistance = 60; controls.maxDistance = 400;
+  controls.update();
 
-  /* ── WHEELS ── */
-  const wheel=(cx,cy,r)=>{
-    let w='';
-    /* tire shadow */ w+=`<ellipse cx="${cx+2}" cy="${cy+2}" rx="${r}" ry="${r}" fill="rgba(0,0,0,.09)"/>`;
-    /* tire body */ w+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${TIRE}"/>`;
-    /* tire bead highlight */ w+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#3D5166" stroke-width="4"/>`;
-    /* rim bed */ w+=`<circle cx="${cx}" cy="${cy}" r="${r*0.80}" fill="#2D3A48" stroke="${RIM}" stroke-width="2"/>`;
-    /* spokes 18 */ for(let i=0;i<18;i++){
-      const a=i*Math.PI/9;
-      const sx=cx+5*Math.cos(a+0.17), sy=cy+5*Math.sin(a+0.17);
-      const ex=cx+r*0.78*Math.cos(a), ey=cy+r*0.78*Math.sin(a);
-      w+=`<line x1="${sx.toFixed(1)}" y1="${sy.toFixed(1)}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}" stroke="#6A7F96" stroke-width="1.1" opacity=".85"/>`;
-    }
-    /* hub */ w+=`<circle cx="${cx}" cy="${cy}" r="10" fill="${HUB}"/>`;
-    w+=`<circle cx="${cx}" cy="${cy}" r="6" fill="#1A2530"/>`;
-    w+=`<circle cx="${cx}" cy="${cy}" r="2.5" fill="#7F8C8D"/>`;
-    return w;
-  };
-  s+=wheel(rX,rY,WR); s+=wheel(fX,fY,WR);
-
-  /* ── CHAIN ── */
-  s+=`<line x1="${rX}" y1="${rY+6}" x2="${bbX+14}" y2="${bbY+6}" stroke="#4A5568" stroke-width="2.5" opacity=".55"/>`;
-
-  /* ── CHAINRING ── */
-  s+=`<circle cx="${bbX}" cy="${bbY}" r="18" fill="none" stroke="#4A5568" stroke-width="5"/>`;
-  s+=`<circle cx="${bbX}" cy="${bbY}" r="14" fill="#2D3748" stroke="#718096" stroke-width="1.5"/>`;
-  s+=`<circle cx="${bbX}" cy="${bbY}" r="5" fill="#4A5568"/>`;
-
-  /* ── FRAME ── */
-  const fw=5.5;
-  /* chain stay */ s+=`<line x1="${bbX}" y1="${bbY}" x2="${rX}" y2="${rY}" stroke="${FRAME_D}" stroke-width="${fw+3}" stroke-linecap="round" opacity=".4"/>`;
-  s+=`<line x1="${bbX}" y1="${bbY}" x2="${rX}" y2="${rY}" stroke="url(#fgrad)" stroke-width="${fw}" stroke-linecap="round"/>`;
-  /* seat stay */ s+=`<line x1="${rX}" y1="${rY}" x2="${stTopX}" y2="${stTopY}" stroke="${FRAME_D}" stroke-width="${fw+2}" stroke-linecap="round" opacity=".4"/>`;
-  s+=`<line x1="${rX}" y1="${rY}" x2="${stTopX}" y2="${stTopY}" stroke="url(#fgrad)" stroke-width="${fw-1}" stroke-linecap="round"/>`;
-  /* seat tube */ s+=`<line x1="${bbX}" y1="${bbY}" x2="${stTopX}" y2="${stTopY}" stroke="${FRAME_D}" stroke-width="${fw+3}" stroke-linecap="round" opacity=".4"/>`;
-  s+=`<line x1="${bbX}" y1="${bbY}" x2="${stTopX}" y2="${stTopY}" stroke="url(#fgrad)" stroke-width="${fw+1}" stroke-linecap="round"/>`;
-  /* down tube (thickest) */ s+=`<line x1="${bbX}" y1="${bbY}" x2="${htBotX}" y2="${htBotY}" stroke="${FRAME_D}" stroke-width="${fw+4}" stroke-linecap="round" opacity=".4"/>`;
-  s+=`<line x1="${bbX}" y1="${bbY}" x2="${htBotX}" y2="${htBotY}" stroke="url(#fgrad)" stroke-width="${fw+2}" stroke-linecap="round"/>`;
-  /* top tube */ s+=`<line x1="${stTopX}" y1="${stTopY}" x2="${htTopX}" y2="${htTopY}" stroke="${FRAME_D}" stroke-width="${fw+2}" stroke-linecap="round" opacity=".4"/>`;
-  s+=`<line x1="${stTopX}" y1="${stTopY}" x2="${htTopX}" y2="${htTopY}" stroke="url(#fgrad)" stroke-width="${fw}" stroke-linecap="round"/>`;
-  /* head tube */ s+=`<line x1="${htTopX}" y1="${htTopY}" x2="${htBotX}" y2="${htBotY}" stroke="${FRAME_D}" stroke-width="${fw+4}" stroke-linecap="round" opacity=".4"/>`;
-  s+=`<line x1="${htTopX}" y1="${htTopY}" x2="${htBotX}" y2="${htBotY}" stroke="url(#fgrad)" stroke-width="${fw+3}" stroke-linecap="round"/>`;
-  /* fork curved */ const fmx=(htBotX+fX)/2+8, fmy=(htBotY+fY)/2;
-  s+=`<path d="M${htBotX},${htBotY} Q${fmx},${fmy} ${fX},${fY}" stroke="${FRAME_D}" stroke-width="${fw+2}" fill="none" stroke-linecap="round" opacity=".4"/>`;
-  s+=`<path d="M${htBotX},${htBotY} Q${fmx},${fmy} ${fX},${fY}" stroke="url(#fgrad)" stroke-width="${fw-1}" fill="none" stroke-linecap="round"/>`;
-  /* stem */ s+=`<line x1="${htTopX}" y1="${htTopY}" x2="${barX}" y2="${barY}" stroke="${METAL}" stroke-width="${fw}" stroke-linecap="round"/>`;
-  s+=`<line x1="${htTopX}" y1="${htTopY}" x2="${barX}" y2="${barY}" stroke="#B0B8C4" stroke-width="2" stroke-linecap="round"/>`;
-  /* BB shell */ s+=`<circle cx="${bbX}" cy="${bbY}" r="11" fill="url(#fgrad)"/>`;
-  s+=`<circle cx="${bbX}" cy="${bbY}" r="5" fill="${FRAME_D}"/>`;
-  /* frame highlight stripe on down tube */
-  const dtMx=(bbX+htBotX)/2-2, dtMy=(bbY+htBotY)/2;
-  s+=`<line x1="${dtMx-6}" y1="${dtMy+4}" x2="${dtMx+4}" y2="${dtMy-4}" stroke="rgba(255,255,255,.22)" stroke-width="3" stroke-linecap="round"/>`;
-
-  /* ── SEATPOST ── */
-  s+=`<line x1="${stTopX}" y1="${stTopY}" x2="${sdX}" y2="${sdY+6}" stroke="${METAL}" stroke-width="3.5" stroke-linecap="round"/>`;
-
-  /* ── SADDLE ── */
-  const sdW=fit.saddleWidth/10*SC*0.48;
-  s+=`<line x1="${sdX-sdW*0.9}" y1="${sdY+7}" x2="${sdX+sdW*0.5}" y2="${sdY+7}" stroke="#999" stroke-width="1.5" opacity=".6"/>`;
-  s+=`<path d="M${sdX-sdW*1.15},${sdY+4} C${sdX-sdW*0.6},${sdY-7} ${sdX+sdW*0.2},${sdY-5} ${sdX+sdW*0.9},${sdY+2} L${sdX+sdW*0.7},${sdY+8} C${sdX+sdW*0.1},${sdY+11} ${sdX-sdW*0.5},${sdY+10} ${sdX-sdW*1.15},${sdY+4}Z" fill="${SADDLE}" stroke="#3D4F5F" stroke-width="1.2"/>`;
-  s+=`<path d="M${sdX-sdW*0.9},${sdY+2} C${sdX-sdW*0.3},${sdY-6} ${sdX+sdW*0.3},${sdY-4} ${sdX+sdW*0.7},${sdY+1}" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1.5"/>`;
-
-  /* ── CRANK ── */
-  s+=`<line x1="${bbX}" y1="${bbY}" x2="${pedX}" y2="${pedY}" stroke="#374151" stroke-width="7" stroke-linecap="round"/>`;
-  s+=`<line x1="${bbX}" y1="${bbY}" x2="${pedX}" y2="${pedY}" stroke="${METAL}" stroke-width="3.5" stroke-linecap="round"/>`;
-  s+=`<line x1="${bbX}" y1="${bbY}" x2="${bbX-2}" y2="${bbY-crankCm*SC}" stroke="#2D3748" stroke-width="6" stroke-linecap="round" opacity=".55"/>`;
-  /* pedal */ s+=`<rect x="${pedX-15}" y="${pedY-4.5}" width="30" height="8" rx="4" fill="#374151" stroke="${METAL}" stroke-width="1.2"/>`;
-  s+=`<rect x="${pedX-12}" y="${pedY-2.5}" width="24" height="4" rx="2" fill="#4B5563"/>`;
-
-  /* ── DROP HANDLEBARS ── */
-  const hbHW=fit.handlebarWidth/2*SC*0.37, hbR=3.2*SC;
-  /* bar tape */ s+=`<path d="M${barX-hbHW},${barY+2} L${barX+hbHW},${barY+2} Q${barX+hbHW+hbR*0.9},${barY+2} ${barX+hbHW+hbR},${barY+hbR*0.8} Q${barX+hbHW+hbR*0.95},${barY+hbR*2} ${barX+hbHW+hbR*0.2},${barY+hbR*2.4} L${barX+hbHW-hbR*0.1},${barY+hbR*2.4} Q${barX+hbHW-hbR*0.5},${barY+hbR*1.7} ${barX+hbHW-hbR*0.25},${barY+hbR*0.9} L${barX+hbHW-hbR*0.2},${barY+6} L${barX-hbHW+hbR*0.2},${barY+6} Q${barX-hbHW+hbR*0.25},${barY+hbR*0.9} ${barX-hbHW+hbR*0.5},${barY+hbR*1.7} Q${barX-hbHW+hbR*0.1},${barY+hbR*2.4} ${barX-hbHW-hbR*0.2},${barY+hbR*2.4} Q${barX-hbHW-hbR*0.95},${barY+hbR*2} ${barX-hbHW-hbR},${barY+hbR*0.8} Q${barX-hbHW-hbR*0.9},${barY+2} ${barX-hbHW},${barY+2}Z" fill="#2D3748" stroke="#4A5568" stroke-width="1.5"/>`;
-  /* bar top highlight */ s+=`<line x1="${barX-hbHW+4}" y1="${barY+3}" x2="${barX+hbHW-4}" y2="${barY+3}" stroke="rgba(255,255,255,.15)" stroke-width="2" stroke-linecap="round"/>`;
-  /* brake hoods */ s+=`<ellipse cx="${barX-hbHW+4}" cy="${barY+4}" rx="6" ry="8" fill="#3D4A5A" transform="rotate(-12,${barX-hbHW+4},${barY+4})"/>`;
-  s+=`<ellipse cx="${barX+hbHW-4}" cy="${barY+4}" rx="6" ry="8" fill="#3D4A5A" transform="rotate(12,${barX+hbHW-4},${barY+4})"/>`;
-  /* brake levers */ s+=`<path d="M${barX-hbHW+8},${barY+6} C${barX-hbHW+10},${barY+14} ${barX-hbHW+5},${barY+20} ${barX-hbHW+2},${barY+18}" fill="none" stroke="#5A6A7A" stroke-width="3" stroke-linecap="round"/>`;
-  s+=`<path d="M${barX+hbHW-8},${barY+6} C${barX+hbHW-10},${barY+14} ${barX+hbHW-5},${barY+20} ${barX+hbHW-2},${barY+18}" fill="none" stroke="#5A6A7A" stroke-width="3" stroke-linecap="round"/>`;
-
-  /* ═══ RIDER ═══ */
-
-  /* shoe */ s+=`<ellipse cx="${footX}" cy="${footY}" rx="14" ry="5.5" fill="#2C3E50"/>`;
-  s+=`<ellipse cx="${footX+3}" cy="${footY-1.5}" rx="9" ry="3" fill="#4A6572"/>`;
-  s+=`<line x1="${footX-10}" y1="${footY+3}" x2="${footX+12}" y2="${footY+3}" stroke="#1A252F" stroke-width="1.5"/>`;
-
-  /* lower leg (bibs/shin) */ s+=`<line x1="${kneeX}" y1="${kneeY}" x2="${footX}" y2="${footY}" stroke="${SHORTS}" stroke-width="12" stroke-linecap="round"/>`;
-  s+=`<line x1="${kneeX}" y1="${kneeY}" x2="${footX}" y2="${footY}" stroke="#2E3D4F" stroke-width="7" stroke-linecap="round"/>`;
-  /* calf muscle subtle highlight */ s+=`<line x1="${(kneeX+footX*2)/3}" y1="${(kneeY+footY*2)/3}" x2="${(kneeX*2+footX)/3}" y2="${(kneeY*2+footY)/3}" stroke="rgba(255,255,255,.07)" stroke-width="4" stroke-linecap="round"/>`;
-
-  /* upper leg (bib shorts) */ s+=`<line x1="${hipX}" y1="${hipY}" x2="${kneeX}" y2="${kneeY}" stroke="${SHORTS}" stroke-width="15" stroke-linecap="round"/>`;
-  s+=`<line x1="${hipX}" y1="${hipY}" x2="${kneeX}" y2="${kneeY}" stroke="#2E3D4F" stroke-width="10" stroke-linecap="round"/>`;
-
-  /* knee cap */ s+=`<circle cx="${kneeX}" cy="${kneeY}" r="7" fill="#2E3D4F"/><circle cx="${kneeX}" cy="${kneeY}" r="5" fill="#374151"/>`;
-
-  /* torso (jersey) */ s+=`<line x1="${hipX}" y1="${hipY}" x2="${shouldX}" y2="${shouldY}" stroke="url(#jerseyGrad)" stroke-width="19" stroke-linecap="round"/>`;
-  s+=`<line x1="${hipX}" y1="${hipY}" x2="${shouldX}" y2="${shouldY}" stroke="#1976D2" stroke-width="13" stroke-linecap="round"/>`;
-  /* jersey side seam highlight */ s+=`<line x1="${hipX+2}" y1="${hipY-3}" x2="${shouldX+2}" y2="${shouldY+4}" stroke="rgba(255,255,255,.18)" stroke-width="3" stroke-linecap="round"/>`;
-
-  /* upper arm */ s+=`<line x1="${shouldX}" y1="${shouldY}" x2="${elbX}" y2="${elbY}" stroke="${JERSEY}" stroke-width="12" stroke-linecap="round"/>`;
-  s+=`<line x1="${shouldX}" y1="${shouldY}" x2="${elbX}" y2="${elbY}" stroke="#1565C0" stroke-width="8" stroke-linecap="round"/>`;
-
-  /* forearm (skin) */ s+=`<line x1="${elbX}" y1="${elbY}" x2="${barX}" y2="${barY+4}" stroke="${SKIN}" stroke-width="9" stroke-linecap="round"/>`;
-  s+=`<line x1="${elbX}" y1="${elbY}" x2="${barX}" y2="${barY+4}" stroke="#D4956A" stroke-width="5" stroke-linecap="round"/>`;
-
-  /* elbow joint */ s+=`<circle cx="${elbX}" cy="${elbY}" r="6" fill="${SKIN}"/><circle cx="${elbX}" cy="${elbY}" r="4" fill="#D4956A"/>`;
-
-  /* shoulder pad */ s+=`<circle cx="${shouldX}" cy="${shouldY}" r="9" fill="${JERSEY}"/><circle cx="${shouldX}" cy="${shouldY}" r="6" fill="#1976D2"/>`;
-
-  /* hip */ s+=`<circle cx="${hipX}" cy="${hipY}" r="8" fill="${SHORTS}"/>`;
-
-  /* neck */ s+=`<line x1="${shouldX}" y1="${shouldY-3}" x2="${neckBaseX}" y2="${neckBaseY+4}" stroke="${SKIN}" stroke-width="9" stroke-linecap="round"/>`;
-  s+=`<line x1="${shouldX}" y1="${shouldY-3}" x2="${neckBaseX}" y2="${neckBaseY+4}" stroke="#D4956A" stroke-width="5" stroke-linecap="round"/>`;
-
-  /* helmet shell */ s+=`<path d="M${headCX-headR*1.25},${headCY+headR*0.2} Q${headCX-headR*1.2},${headCY-headR*1.4} ${headCX},${headCY-headR*1.5} Q${headCX+headR*1.2},${headCY-headR*1.4} ${headCX+headR*1.15},${headCY+headR*0.15}Z" fill="${HELMET}" stroke="${HELMET_D}" stroke-width="1.5"/>`;
-  /* helmet visor */ s+=`<path d="M${headCX-headR*1.25},${headCY+headR*0.2} Q${headCX-headR*0.9},${headCY+headR*0.6} ${headCX+headR*0.8},${headCY+headR*0.5} L${headCX+headR*1.15},${headCY+headR*0.15}Z" fill="${HELMET_D}" opacity=".5"/>`;
-  /* helmet vents */ for(let i=0;i<4;i++){
-    const vx=headCX-headR*0.7+i*headR*0.47;
-    s+=`<ellipse cx="${vx}" cy="${headCY-headR*0.7}" rx="3.5" ry="5" fill="${HELMET_D}" opacity=".4"/>`;
+  // ── Ground ──
+  const gMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(800, 600),
+    new THREE.MeshStandardMaterial({ color: 0xCDD8EC, roughness: 0.9, metalness: 0 })
+  );
+  gMesh.rotation.x = -Math.PI / 2; gMesh.receiveShadow = true; scene.add(gMesh);
+  // Road lane lines
+  for (let i = -4; i <= 4; i++) {
+    const lane = new THREE.Mesh(
+      new THREE.PlaneGeometry(300, 0.6),
+      new THREE.MeshStandardMaterial({ color: 0xB8C8E0, roughness: 1 })
+    );
+    lane.rotation.x = -Math.PI / 2; lane.position.set(50, 0.02, i * 35); scene.add(lane);
   }
-  /* helmet highlight */ s+=`<path d="M${headCX-headR*0.6},${headCY-headR*1.35} Q${headCX},${headCY-headR*1.6} ${headCX+headR*0.5},${headCY-headR*1.3}" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" stroke-linecap="round"/>`;
 
-  /* head/face */ s+=`<circle cx="${headCX}" cy="${headCY}" r="${headR}" fill="url(#skinGrad)"/>`;
-  /* nose hint */ s+=`<ellipse cx="${headCX+headR*0.6}" cy="${headCY+headR*0.1}" rx="2" ry="2.5" fill="#C0785A" opacity=".5"/>`;
-  /* sunglasses */ s+=`<path d="M${headCX+headR*0.1},${headCY-headR*0.15} Q${headCX+headR*0.5},${headCY-headR*0.3} ${headCX+headR*0.85},${headCY-headR*0.05}" fill="none" stroke="#1A2530" stroke-width="2.2" stroke-linecap="round"/>`;
-  s+=`<path d="M${headCX-headR*0.1},${headCY-headR*0.15} Q${headCX-headR*0.3},${headCY-headR*0.28} ${headCX+headR*0.1},${headCY-headR*0.15}" fill="none" stroke="#1A2530" stroke-width="1.5"/>`;
+  // ── Helper closures ──
+  const mat = (hex, metal = 0.08, rough = 0.58) =>
+    new THREE.MeshStandardMaterial({ color: hex, metalness: metal, roughness: rough });
+  const v3 = (x, y, z) => new THREE.Vector3(x, y, z);
 
-  /* ── DIMENSION LINES ── */
-  const tx=(x,y,t,col,sz=10.5)=>`<text x="${x}" y="${y}" fill="${col}" font-size="${sz}" font-weight="700" text-anchor="middle" dominant-baseline="middle" style="paint-order:stroke;stroke:#EEF2FF;stroke-width:3;font-family:Inter,system-ui">${t}</text>`;
-  const vdim=(x,y1,y2,lbl,col)=>{
-    let d=`<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="${col}" stroke-width="1.8" opacity=".9"/>`;
-    d+=`<line x1="${x-5}" y1="${y1}" x2="${x+5}" y2="${y1}" stroke="${col}" stroke-width="1.8"/>`;
-    d+=`<line x1="${x-5}" y1="${y2}" x2="${x+5}" y2="${y2}" stroke="${col}" stroke-width="1.8"/>`;
-    d+=tx(x,(y1+y2)/2,lbl,col); return d;
-  };
+  function addTube(p1, p2, r, material) {
+    const dir = new THREE.Vector3().subVectors(p2, p1);
+    const len = dir.length();
+    if (len < 0.05) return;
+    const mesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 14), material);
+    mesh.position.lerpVectors(p1, p2, 0.5);
+    const up = new THREE.Vector3(0, 1, 0);
+    const nd = dir.clone().normalize();
+    if (Math.abs(up.dot(nd)) < 0.9999) mesh.quaternion.setFromUnitVectors(up, nd);
+    else if (nd.y < 0) mesh.rotateX(Math.PI);
+    mesh.castShadow = true; mesh.receiveShadow = true; scene.add(mesh);
+  }
+  function addBall(pos, r, material) {
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(r, 18, 14), material);
+    mesh.position.copy(pos); mesh.castShadow = true; scene.add(mesh);
+  }
 
-  s+=vdim(sdX+36, sdY, GY, `③ ${fit.saddleFromGround}cm`, '#059669');
-  s+=vdim(barX+42, barY, GY, `① ${fit.handlebarHeight}cm`, '#DC2626');
-  s+=vdim(bbX-34, sdY, bbY, `⑧ ${fit.csDistance}cm`, '#D97706');
+  // ── Bike geometry (units = cm) ──
+  const WR   = 33.5;  // 700c tyre outer radius
+  const BB_H = 27;    // BB centre height
+  const CS   = 41;    // chain-stay horizontal (rear axle → BB)
+  const WB   = 99;    // wheelbase
 
-  const ang=Math.atan2(barY-sdY,barX-sdX);
-  const mx=(sdX+barX)/2, my=(sdY+barY)/2;
-  const nx=-Math.sin(ang), ny=Math.cos(ang);
-  s+=`<line x1="${sdX}" y1="${sdY}" x2="${barX}" y2="${barY}" stroke="#2563EB" stroke-width="1.8" stroke-dasharray="7,3" opacity=".75"/>`;
-  s+=`<circle cx="${sdX}" cy="${sdY}" r="3.5" fill="#2563EB"/>`;
-  s+=`<circle cx="${barX}" cy="${barY}" r="3.5" fill="#2563EB"/>`;
-  s+=tx(mx+nx*15,my+ny*15,`⑤ ${fit.hsDist}cm`,'#2563EB');
+  const rear  = v3(0,  WR, 0);
+  const front = v3(WB, WR, 0);
+  const bb    = v3(CS, BB_H, 0);
+  const sd    = v3(bb.x - fit.setback, fit.saddleFromGround, 0);
+  const bar   = v3(bb.x - fit.setback + fit.reach, fit.handlebarHeight, 0);
 
-  {const r=36,a1=-Math.PI/2,a2=-Math.atan2(sdY-bbY,sdX-bbX);
-  s+=`<path d="M${bbX+r*Math.cos(a1)},${bbY+r*Math.sin(a1)} A${r},${r} 0 0,1 ${bbX+r*Math.cos(a2)},${bbY+r*Math.sin(a2)}" fill="none" stroke="#0891B2" stroke-width="2"/>`;
-  s+=tx(bbX-44,bbY-24,`⑦ ${fit.csAngle}°`,'#0891B2',10);}
+  // Seat-tube top
+  const stA  = 73 * Math.PI / 180;
+  const stH  = fit.saddleFromGround - BB_H + 7;
+  const stTop = v3(bb.x - stH * Math.cos(stA), bb.y + stH * Math.sin(stA), 0);
 
-  {const r=32,ax=Math.atan2(barY-sdY,barX-sdX);
-  s+=`<path d="M${sdX+r},${sdY} A${r},${r} 0 0,1 ${sdX+r*Math.cos(ax)},${sdY+r*Math.sin(ax)}" fill="none" stroke="#7C3AED" stroke-width="2"/>`;
-  s+=tx(sdX+46,sdY-15,`⑥ ${fit.hsAngle}°`,'#7C3AED',10);}
+  // Head-tube
+  const htBot = v3(front.x - 8, 40, 0);
+  const htLen = 14;
+  const htTop = v3(htBot.x - htLen * Math.cos(stA), htBot.y + htLen * Math.sin(stA), 0);
 
-  s+=tx((bbX+pedX)/2+18,(bbY+pedY)/2,`⑩ ${fit.crankLength}mm`,'#DB2777',10);
-  const sdW2=fit.saddleWidth/10*SC*0.48;
-  s+=tx(sdX-sdW2-10,sdY-13,`⑨ ${fit.saddleAngle}°`,'#0D9488',10);
+  // ── Materials ──
+  const mFrame  = mat(0xC0392B, 0.22, 0.28);
+  const mFrameD = mat(0x922B21, 0.22, 0.32);
+  const mCarbon = mat(0x1A1A28, 0.18, 0.38);
+  const mMetal  = mat(0x8EA4B8, 0.72, 0.18);
+  const mBlack  = mat(0x1C2430, 0.12, 0.52);
+  const mTire   = mat(0x1A2230, 0.04, 0.85);
+  const mRim    = mat(0x9DB8CF, 0.82, 0.14);
+  const mHub    = mat(0x2C3E52, 0.62, 0.24);
+  const mSpoke  = mat(0x78A0BC, 0.82, 0.18);
+  const mSaddle = mat(0x27303C, 0.06, 0.72);
+  const mSkin   = mat(0xE8A87C, 0.02, 0.78);
+  const mJersey = mat(0x1460B8, 0.04, 0.68);
+  const mShorts = mat(0x18192A, 0.04, 0.72);
+  const mHelmet = mat(0xF39C12, 0.06, 0.44);
+  const mGlass  = mat(0x1A2530, 0.55, 0.08);
+  const mChain  = mat(0x485060, 0.52, 0.42);
+  const mCasset = mat(0x6A7888, 0.62, 0.28);
+  const mShoe   = mat(0x22304A, 0.08, 0.65);
 
-  /* ── INSET PANELS ── */
-  const inX=W-152, inY=24, inW=132, inH=96;
-  s+=`<rect x="${inX}" y="${inY}" width="${inW}" height="${inH}" rx="8" fill="rgba(255,255,255,.9)" stroke="#C8D4E8" stroke-width="1"/>`;
-  s+=tx(inX+inW/2,inY+13,'핸들바 (전면)','#6B7FBB',9);
-  const hbCX=inX+inW/2, hbCY=inY+inH/2+8, hbHW2=Math.min(50,fit.handlebarWidth*1.9);
-  s+=`<path d="M${hbCX-hbHW2},${hbCY-5} Q${hbCX-hbHW2},${hbCY+10} ${hbCX-hbHW2+10},${hbCY+14}" fill="none" stroke="#4A6ACF" stroke-width="5" stroke-linecap="round"/>`;
-  s+=`<line x1="${hbCX-hbHW2}" y1="${hbCY-5}" x2="${hbCX+hbHW2}" y2="${hbCY-5}" stroke="#4A6ACF" stroke-width="5" stroke-linecap="round"/>`;
-  s+=`<path d="M${hbCX+hbHW2},${hbCY-5} Q${hbCX+hbHW2},${hbCY+10} ${hbCX+hbHW2-10},${hbCY+14}" fill="none" stroke="#4A6ACF" stroke-width="5" stroke-linecap="round"/>`;
-  s+=`<line x1="${hbCX-hbHW2}" y1="${hbCY-21}" x2="${hbCX+hbHW2}" y2="${hbCY-21}" stroke="#D97706" stroke-width="1.5"/>`;
-  s+=`<line x1="${hbCX-hbHW2}" y1="${hbCY-26}" x2="${hbCX-hbHW2}" y2="${hbCY-16}" stroke="#D97706" stroke-width="1.5"/>`;
-  s+=`<line x1="${hbCX+hbHW2}" y1="${hbCY-26}" x2="${hbCX+hbHW2}" y2="${hbCY-16}" stroke="#D97706" stroke-width="1.5"/>`;
-  s+=tx(hbCX,hbCY-31,`④ ${fit.handlebarWidth}cm`,'#D97706',10);
+  // ── Wheel ──
+  function addWheel(centre) {
+    // Tyre
+    const tyre = new THREE.Mesh(new THREE.TorusGeometry(WR, 2.1, 18, 72), mTire);
+    tyre.rotation.y = Math.PI / 2; tyre.position.copy(centre);
+    tyre.castShadow = true; scene.add(tyre);
+    // Rim
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(WR * 0.81, 0.7, 10, 72), mRim);
+    rim.rotation.y = Math.PI / 2; rim.position.copy(centre); scene.add(rim);
+    // Spoke disc (background fill)
+    const disc = new THREE.Mesh(
+      new THREE.CylinderGeometry(WR * 0.78, WR * 0.78, 0.5, 52),
+      mat(0x384858, 0.28, 0.68)
+    );
+    disc.rotation.z = Math.PI / 2; disc.position.copy(centre); scene.add(disc);
+    // Spokes ×20
+    for (let i = 0; i < 20; i++) {
+      const a = (i / 20) * Math.PI * 2;
+      addTube(
+        v3(centre.x, centre.y + 3.8 * Math.sin(a), centre.z + 3.8 * Math.cos(a)),
+        v3(centre.x, centre.y + WR * 0.79 * Math.sin(a), centre.z + WR * 0.79 * Math.cos(a)),
+        0.18, mSpoke
+      );
+    }
+    // Hub
+    const hub = new THREE.Mesh(new THREE.CylinderGeometry(3.3, 3.3, 13, 18), mHub);
+    hub.rotation.z = Math.PI / 2; hub.position.copy(centre);
+    hub.castShadow = true; scene.add(hub);
+    // Axle
+    addTube(v3(centre.x, centre.y, -10), v3(centre.x, centre.y, 10), 0.75, mMetal);
+  }
+  addWheel(rear); addWheel(front);
 
-  const siX=W-152, siY=inY+inH+10, siW=132, siH=76;
-  s+=`<rect x="${siX}" y="${siY}" width="${siW}" height="${siH}" rx="8" fill="rgba(255,255,255,.9)" stroke="#C8D4E8" stroke-width="1"/>`;
-  s+=tx(siX+siW/2,siY+13,'안장 (상면)','#6B7FBB',9);
-  const sCX=siX+siW/2, sCY=siY+siH/2+8, sHW=Math.min(48,fit.saddleWidth/10*1.5);
-  s+=`<ellipse cx="${sCX}" cy="${sCY}" rx="${sHW*0.55}" ry="${sHW*1.15}" fill="none" stroke="#7C3AED" stroke-width="2.5"/>`;
-  s+=`<ellipse cx="${sCX}" cy="${sCY-sHW*0.5}" rx="${sHW*0.45}" ry="${sHW*0.5}" fill="none" stroke="#7C3AED" stroke-width="1" opacity=".4"/>`;
-  s+=`<line x1="${sCX-sHW*0.55}" y1="${sCY-sHW*0.7}" x2="${sCX+sHW*0.55}" y2="${sCY-sHW*0.7}" stroke="#7C3AED" stroke-width="1.5"/>`;
-  s+=tx(sCX,sCY-sHW*0.7-8,`② ${fit.saddleWidth}mm`,'#7C3AED',10);
+  // Cassette on rear wheel
+  for (let i = 0; i < 9; i++) {
+    const r2 = 6.5 + i * 0.9;
+    const cs2 = new THREE.Mesh(new THREE.TorusGeometry(r2, 0.55, 6, 32), mCasset);
+    cs2.rotation.y = Math.PI / 2; cs2.position.set(rear.x, rear.y, -4 - i * 0.8); scene.add(cs2);
+  }
 
-  s+=`</svg>`;
-  G('svgWrap').innerHTML=s;
-  G('vizLeg').innerHTML=[
-    ['#DC2626','① 핸들 높이'],['#D97706','④ 핸들 넓이'],
-    ['#059669','③ 안장 높이'],['#7C3AED','② 안장 넓이'],
-    ['#2563EB','⑤ 핸들-안장 간격'],['#7C3AED','⑥ 핸들-안장 각도'],
-    ['#0891B2','⑦ 크랭크-안장 각도'],['#D97706','⑧ 크랭크-안장 거리'],
-    ['#0D9488','⑨ 안장 각도'],['#DB2777','⑩ 크랭크암 길이'],
-  ].map(([c,l])=>`<div class="vleg"><div class="vdot" style="background:${c}"></div>${l}</div>`).join('');
+  // ── Frame ──
+  addTube(bb, stTop, 1.38, mFrame);          // seat tube
+  addTube(stTop, htTop, 1.22, mFrame);       // top tube
+  addTube(bb, htBot, 1.48, mFrame);          // down tube
+  addTube(htBot, htTop, 1.58, mFrame);       // head tube
+  for (const z of [4.2, -4.2]) {            // chain stays
+    addTube(v3(bb.x, bb.y, z * 0.5), v3(rear.x, rear.y, z), 0.82, mFrame);
+    addTube(v3(rear.x, rear.y, z), v3(stTop.x, stTop.y, z), 0.62, mFrameD); // seat stays
+  }
+  addBall(bb, 2.9, mMetal);  // BB shell
+
+  // Fork blades
+  for (const z of [4, -4])
+    addTube(v3(htBot.x, htBot.y, z * 0.5), v3(front.x, front.y, z), 0.72, mMetal);
+
+  // Seat post
+  addTube(stTop, v3(sd.x, sd.y + 1.5, 0), 1.08, mMetal);
+
+  // ── Saddle ──
+  const swH = fit.saddleWidth / 10 * 0.44;  // half-width cm
+  const saddle = new THREE.Mesh(
+    new THREE.SphereGeometry(1, 16, 8), mSaddle
+  );
+  saddle.scale.set(7.5, 0.85, swH); saddle.position.set(sd.x - 2.5, sd.y + 1.1, 0);
+  saddle.castShadow = true; scene.add(saddle);
+  // Rails
+  for (const z of [swH * 0.38, -swH * 0.38])
+    addTube(v3(sd.x - 7, sd.y - 0.6, z), v3(sd.x + 3.5, sd.y - 0.6, z), 0.38, mMetal);
+
+  // ── Stem ──
+  addBall(htTop, 1.9, mMetal);
+  addTube(htTop, v3(bar.x - 2.5, bar.y + 1.8, 0), 1.12, mMetal);
+
+  // ── Drop Handlebars ──
+  const hw = fit.handlebarWidth / 2;
+  addTube(v3(bar.x, bar.y, -3), v3(bar.x, bar.y, 3), 1.35, mMetal); // clamp
+  for (const sg of [1, -1]) {
+    const bz = sg * hw;
+    addTube(v3(bar.x, bar.y, sg * 3), v3(bar.x, bar.y, bz), 1.1, mCarbon);        // top
+    addTube(v3(bar.x, bar.y, bz), v3(bar.x - 1.5, bar.y - 3.5, bz), 1.0, mCarbon); // upper bend
+    addTube(v3(bar.x - 1.5, bar.y - 3.5, bz), v3(bar.x - 4, bar.y - 9, bz), 0.9, mCarbon); // drop
+    addTube(v3(bar.x - 4, bar.y - 9, bz), v3(bar.x - 1.5, bar.y - 12, bz), 0.9, mCarbon); // hook
+    const hood = new THREE.Mesh(new THREE.BoxGeometry(5, 2.2, 2.8), mat(0x2D3845, 0.1, 0.62));
+    hood.position.set(bar.x + 0.5, bar.y - 1.6, sg * (hw - 0.5));
+    hood.rotation.z = 0.14 * sg; hood.castShadow = true; scene.add(hood);
+  }
+
+  // ── Crankset ──
+  const chainring = new THREE.Mesh(new THREE.TorusGeometry(9.8, 0.8, 10, 48), mChain);
+  chainring.rotation.y = Math.PI / 2; chainring.position.copy(bb); scene.add(chainring);
+  const innerRing = new THREE.Mesh(new THREE.TorusGeometry(6.2, 0.55, 8, 36), mChain);
+  innerRing.rotation.y = Math.PI / 2; innerRing.position.copy(bb); scene.add(innerRing);
+  addTube(v3(bb.x, bb.y, -7.5), v3(bb.x, bb.y, 7.5), 1.35, mMetal); // spindle
+
+  const crankCm = fit.crankLength / 10;
+  const crankA  = -68 * Math.PI / 180; // ~4-5 o'clock
+  const pedalR  = v3(bb.x + crankCm * Math.sin(crankA), bb.y + crankCm * Math.cos(crankA),  5.8);
+  const pedalL  = v3(bb.x - crankCm * Math.sin(crankA), bb.y - crankCm * Math.cos(crankA), -5.8);
+  addTube(v3(bb.x, bb.y, 5.8), pedalR, 0.88, mBlack);
+  addTube(v3(bb.x, bb.y, -5.8), pedalL, 0.88, mBlack);
+  const pedGeo = new THREE.BoxGeometry(9.5, 1.3, 3.8);
+  for (const [pos, zd] of [[pedalR, 1.8], [pedalL, -1.8]]) {
+    const ped = new THREE.Mesh(pedGeo, mat(0x20282E, 0.22, 0.5));
+    ped.position.copy(pos); ped.position.z += zd;
+    ped.castShadow = true; scene.add(ped);
+  }
+  // Chain (simplified)
+  addTube(v3(pedalR.x, pedalR.y, 4.2), v3(bb.x, bb.y - 9.8, 4.2), 0.52, mChain);
+  addTube(v3(bb.x, bb.y - 9.8, 4.2), v3(rear.x + 2, rear.y + 7, 4.2), 0.52, mChain);
+
+  // ── Rider ──
+  const leanDeg = { comfort: 16, endurance: 32, performance: 46, racing: 56 }[m.position] || 32;
+  const lean = leanDeg * Math.PI / 180;
+
+  const hipP    = v3(sd.x, sd.y, 0);
+  const shouldP = v3(hipP.x + m.torso * Math.sin(lean), hipP.y + m.torso * Math.cos(lean), 0);
+  const elbP    = v3((shouldP.x + bar.x) * 0.5 + 2.8 * Math.sin(lean), (shouldP.y + bar.y) * 0.5 - 5.5, 0);
+
+  const thighA = lean - 0.45;
+  const kneeR  = v3(hipP.x + m.thigh * Math.sin(thighA), hipP.y - m.thigh * Math.cos(thighA), 0);
+
+  const headR2  = m.height * 0.062;
+  const neckBase = v3(shouldP.x + 0.9 * Math.sin(lean + 0.3), shouldP.y + 2.8, 0);
+  const headP   = v3(neckBase.x + headR2 * 0.22 * Math.sin(lean + 0.2), neckBase.y + headR2 * 1.18, 0);
+
+  const legZ = 5.8, armZ = 3.8;
+  const uArmL = m.arm * 0.46, fArmL = m.arm * 0.54;
+
+  // Torso (tapered)
+  const torsoDir = new THREE.Vector3().subVectors(shouldP, hipP);
+  const torsoLen2 = torsoDir.length();
+  const torsoMesh = new THREE.Mesh(new THREE.CylinderGeometry(5.2, 7.0, torsoLen2, 18), mJersey);
+  torsoMesh.position.lerpVectors(hipP, shouldP, 0.5);
+  torsoMesh.quaternion.setFromUnitVectors(v3(0,1,0), torsoDir.clone().normalize());
+  torsoMesh.castShadow = true; scene.add(torsoMesh);
+
+  // Hip pad
+  const hipPad = new THREE.Mesh(new THREE.SphereGeometry(7, 14, 10), mShorts);
+  hipPad.scale.set(0.88, 0.54, 1.28); hipPad.position.copy(hipP);
+  hipPad.castShadow = true; scene.add(hipPad);
+
+  // Arms (both sides)
+  for (const sg of [1, -1]) {
+    const shZ  = v3(shouldP.x, shouldP.y, sg * armZ);
+    const elbZ = v3(elbP.x, elbP.y, sg * armZ);
+    const barZ = v3(bar.x, bar.y, sg * (hw > armZ + 2 ? hw * 0.55 : armZ + 1));
+    addBall(shZ, 3.8, mJersey);
+    addTube(shZ, elbZ, 2.5, mJersey);   // upper arm
+    addBall(elbZ, 2.7, mSkin);
+    addTube(elbZ, barZ, 2.1, mSkin);    // forearm
+    addBall(barZ, 2.2, mSkin);          // hand
+  }
+
+  // Right leg (near, crank ~4-5 o'clock)
+  const kneeRZ = v3(kneeR.x, kneeR.y, legZ);
+  addBall(v3(hipP.x, hipP.y, legZ), 5.8, mShorts);
+  addTube(v3(hipP.x, hipP.y, legZ), kneeRZ, 4.0, mShorts);
+  addBall(kneeRZ, 4.3, mSkin);
+  addTube(kneeRZ, pedalR, 3.2, mSkin);
+  const shoeR = new THREE.Mesh(new THREE.BoxGeometry(m.shoeSize * 0.032, 2.8, 4.5), mShoe);
+  shoeR.position.set(pedalR.x + 1, pedalR.y + 0.5, pedalR.z + 1.5); shoeR.castShadow = true; scene.add(shoeR);
+
+  // Left leg (far, crank ~10-11 o'clock)
+  addBall(v3(hipP.x, hipP.y, -legZ), 5.8, mShorts);
+  const kneeLx = hipP.x + m.thigh * Math.sin(lean + 0.3);
+  const kneeLy = hipP.y - m.thigh * Math.cos(lean + 0.3) + 13;
+  const kneeLZ = v3(kneeLx, kneeLy, -legZ);
+  addTube(v3(hipP.x, hipP.y, -legZ), kneeLZ, 4.0, mShorts);
+  addBall(kneeLZ, 4.3, mSkin);
+  addTube(kneeLZ, v3(pedalL.x, pedalL.y, -legZ), 3.2, mSkin);
+  const shoeL = new THREE.Mesh(new THREE.BoxGeometry(m.shoeSize * 0.032, 2.8, 4.5), mShoe);
+  shoeL.position.set(pedalL.x + 1, pedalL.y + 0.5, -legZ - 1.5); shoeL.castShadow = true; scene.add(shoeL);
+
+  // Neck
+  addTube(v3(shouldP.x, shouldP.y, 0), neckBase, 2.4, mSkin);
+
+  // Head
+  addBall(headP, headR2, mSkin);
+
+  // Helmet
+  const helmMesh = new THREE.Mesh(new THREE.SphereGeometry(headR2 * 1.2, 22, 16), mHelmet);
+  helmMesh.scale.set(1, 0.76, 1); helmMesh.position.set(headP.x, headP.y + 1, headP.z);
+  helmMesh.castShadow = true; scene.add(helmMesh);
+  // Helmet vents (darker strips)
+  for (let i = 0; i < 4; i++) {
+    const vent = new THREE.Mesh(new THREE.BoxGeometry(2, 0.5, headR2 * 1.6), mat(0xC47D08, 0.1, 0.6));
+    vent.position.set(headP.x + headR2 * 0.4 - i * headR2 * 0.28, headP.y + headR2 * 0.55, headP.z);
+    vent.rotation.z = -lean * 0.6; scene.add(vent);
+  }
+
+  // Sunglasses
+  for (const zOff of [3.0, -3.0]) {
+    const gl = new THREE.Mesh(new THREE.TorusGeometry(2.4, 0.48, 8, 20), mGlass);
+    gl.rotation.z = Math.PI / 2;
+    gl.position.set(headP.x + headR2 * 0.65 * Math.sin(lean + 0.08), headP.y - headR2 * 0.2, zOff);
+    scene.add(gl);
+  }
+  // Glasses bridge
+  addTube(
+    v3(headP.x + headR2 * 0.65 * Math.sin(lean + 0.08), headP.y - headR2 * 0.2, 3.0),
+    v3(headP.x + headR2 * 0.65 * Math.sin(lean + 0.08), headP.y - headR2 * 0.2, -3.0),
+    0.38, mGlass
+  );
+
+  // ── Animate ──
+  let rafId;
+  (function animate() {
+    rafId = requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+  })();
+  _three = { rafId, renderer, scene };
+
+  // Update section title
+  const titleEl = wrap.previousElementSibling;
+  if (titleEl) titleEl.textContent = '🚴 3D 자전거 피팅 시각화 — 드래그하여 회전';
+
+  // Legend
+  G('vizLeg').innerHTML = [
+    ['#059669', `안장 높이 ${fit.saddleFromGround}cm`],
+    ['#DC2626', `핸들 높이 ${fit.handlebarHeight}cm`],
+    ['#7C3AED', `안장 넓이 ${fit.saddleWidth}mm`],
+    ['#D97706', `핸들 넓이 ${fit.handlebarWidth}cm`],
+    ['#2563EB', `리치 ${fit.reach}cm`],
+    ['#0891B2', `세트백 ${fit.setback}cm`],
+    ['#DB2777', `크랭크암 ${fit.crankLength}mm`],
+    ['#0D9488', `드롭 ${fit.saddleDrop}cm`],
+  ].map(([c, l]) => `<div class="vleg"><div class="vdot" style="background:${c}"></div>${l}</div>`).join('');
 }
 </script>
 </body>
