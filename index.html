@@ -541,12 +541,21 @@ function drawBike(m, fit) {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.15;
+  renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.domElement.style.cssText = 'border-radius:10px;display:block;cursor:grab;width:100%;';
+  wrap.style.position = 'relative';
   wrap.appendChild(renderer.domElement);
+
+  // 수치 표시용 2D 오버레이 캔버스
+  const annotCanvas = document.createElement('canvas');
+  annotCanvas.width = W; annotCanvas.height = H;
+  annotCanvas.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;width:100%;height:100%;border-radius:10px;';
+  wrap.appendChild(annotCanvas);
+  const annotCtx = annotCanvas.getContext('2d');
 
   const hint = document.createElement('div');
   hint.style.cssText = 'text-align:center;font-size:0.7rem;color:#9CA3AF;margin-top:6px;';
-  hint.textContent = '🖱 드래그: 회전  |  스크롤: 확대/축소  |  우클릭: 이동';
+  hint.textContent = '🖱 드래그: 회전  |  스크롤: 확대/축소  |  우클릭: 이동  |  정면에서 수치 표시';
   wrap.appendChild(hint);
 
   // ── Camera ──
@@ -555,11 +564,12 @@ function drawBike(m, fit) {
   camera.lookAt(50, 52, 0);
 
   // ── Lights ──
-  scene.add(new THREE.AmbientLight(0xffffff, 0.52));
+  scene.add(new THREE.AmbientLight(0xffffff, 0.30));
+  scene.add(new THREE.HemisphereLight(0xC8DCF8, 0xA8B8C0, 0.55));
   const sun = new THREE.DirectionalLight(0xFFF9F0, 1.15);
   sun.position.set(70, 220, 130);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.mapSize.set(4096, 4096);
   sun.shadow.camera.left = -180; sun.shadow.camera.right = 220;
   sun.shadow.camera.top = 180;  sun.shadow.camera.bottom = -30;
   sun.shadow.camera.near = 5;   sun.shadow.camera.far = 700;
@@ -632,11 +642,12 @@ function drawBike(m, fit) {
   const frameSize = m.inseam * 0.67;          // 컴팩트 지오메트리 프레임 사이즈
   const stTop     = v3(bb.x - frameSize * Math.cos(stA), bb.y + frameSize * Math.sin(stA), 0);
 
-  // 헤드튜브: De Rosa 스타일 (상단이 탑튜브와 만남)
-  const htA   = 73.5 * Math.PI / 180;
-  const htLen = 13;
-  const htBot = v3(front.x - 7, 38, 0);
-  const htTop = v3(htBot.x - htLen * Math.cos(htA), htBot.y + htLen * Math.sin(htA), 0);
+  // 헤드튜브: 포크 블레이드 길이 기반 정확한 위치 계산 (비례 정확도)
+  const htA         = 73.5 * Math.PI / 180;
+  const forkBladeLn = 37.2;   // 포크 블레이드 길이 (cm)
+  const htLen       = Math.max(10, Math.round((m.height - 163) * 0.25 + 10));  // 헤드튜브 길이 키에 비례
+  const htBot       = v3(front.x - forkBladeLn * Math.cos(htA), front.y + forkBladeLn * Math.sin(htA), 0);
+  const htTop       = v3(htBot.x - htLen * Math.cos(htA), htBot.y + htLen * Math.sin(htA), 0);
 
   // 시트포스트 끝점 (안장 높이까지, 시트튜브 방향 연장)
   const spLen    = (fit.saddleFromGround - stTop.y) / Math.sin(stA);
@@ -753,10 +764,14 @@ function drawBike(m, fit) {
   // BB 쉘
   addBall(bb, 3.0, mMetal);
 
-  // 포크 (블루, 약간 곡선 표현: 2분할)
+  // 포크 (블루, 약간 곡선: 2분할 — htBot 기준으로 front axle까지)
   for (const z of [4.2, -4.2]) {
-    const forkMid = v3(htBot.x + 8, htBot.y - 12, z * 0.7);
-    addTube(v3(htBot.x, htBot.y, z * 0.3), forkMid, 0.75, mFrameBlue);
+    const forkMid = v3(
+      htBot.x + (front.x - htBot.x) * 0.4 + 2.5,
+      htBot.y + (front.y - htBot.y) * 0.4,
+      z * 0.7
+    );
+    addTube(v3(htBot.x, htBot.y, z * 0.35), forkMid, 0.75, mFrameBlue);
     addTube(forkMid, v3(front.x, front.y, z), 0.68, mFrameBlue);
   }
   // 포크 크라운
@@ -782,13 +797,16 @@ function drawBike(m, fit) {
   for (const z of [swH * 0.38, -swH * 0.38])
     addTube(v3(sd.x - 7.5, sd.y - 0.5, z), v3(sd.x + 4, sd.y - 0.5, z), 0.36, mMetal);
 
-  // ── 스템 ──
+  // ── 스템 (스티어러 연장 + 스페이서 + 수평 스템) ──
+  const steererExtra = Math.max(0, (bar.y - htTop.y) / Math.sin(htA));
+  const stemBase = v3(htTop.x - steererExtra * Math.cos(htA), htTop.y + steererExtra * Math.sin(htA), 0);
   addBall(htTop, 2.0, mMetal);
-  addTube(htTop, v3(bar.x - 3, bar.y + 2, 0), 1.15, mMetal);
-  // 스템 클램프
+  addTube(htTop, stemBase, 1.3, mMetal);                        // 스티어러 + 스페이서
+  addTube(stemBase, v3(bar.x - 2, bar.y, 0), 1.15, mMetal);    // 수평 스템
+  addBall(stemBase, 2.2, mat(0x303840, 0.5, 0.3));              // 스템 헤드
   const stemClamp = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 1.8, 3.2, 12), mMetal);
   stemClamp.rotation.x = Math.PI / 2;
-  stemClamp.position.set(bar.x - 1, bar.y + 1.5, 0); scene.add(stemClamp);
+  stemClamp.position.set(bar.x - 1, bar.y, 0); scene.add(stemClamp);
 
   // ── 드롭 핸들바 ──
   const hw = fit.handlebarWidth / 2;
@@ -964,12 +982,77 @@ function drawBike(m, fit) {
     0.38, mGlass
   );
 
+  // ── 수치 오버레이 ──
+  function drawAnnotations() {
+    if (!annotCtx) return;
+    annotCtx.clearRect(0, 0, W, H);
+    const camVec = new THREE.Vector3().subVectors(camera.position, controls.target).normalize();
+    const hLen = Math.sqrt(camVec.x * camVec.x + camVec.z * camVec.z) + 0.001;
+    if (Math.abs(camVec.z) / hLen < 0.55) return; // 옆면 아닐 때는 숨김
+
+    function proj(x, y, z) {
+      const v = new THREE.Vector3(x, y, z).project(camera);
+      return { x: (v.x + 1) * W / 2, y: (-v.y + 1) * H / 2 };
+    }
+    function dimLine(pa, pb, label, color, offDir) {
+      if (offDir === undefined) offDir = -1;
+      const dx = pb.x - pa.x, dy = pb.y - pa.y;
+      const len = Math.sqrt(dx * dx + dy * dy);
+      if (len < 6) return;
+      const nx = (-dy / len) * offDir, ny = (dx / len) * offDir;
+      const ox = nx * 24, oy = ny * 24;
+      annotCtx.save();
+      annotCtx.strokeStyle = color; annotCtx.fillStyle = color; annotCtx.lineWidth = 1.5;
+      // 기준선 (대상 위치에서 치수선까지)
+      for (const [px, py] of [[pa.x, pa.y], [pb.x, pb.y]]) {
+        annotCtx.setLineDash([]);
+        annotCtx.beginPath(); annotCtx.moveTo(px, py); annotCtx.lineTo(px + ox, py + oy); annotCtx.stroke();
+      }
+      // 치수선 (점선)
+      annotCtx.setLineDash([4, 3]);
+      annotCtx.beginPath(); annotCtx.moveTo(pa.x + ox, pa.y + oy); annotCtx.lineTo(pb.x + ox, pb.y + oy); annotCtx.stroke();
+      // 화살표
+      annotCtx.setLineDash([]);
+      for (const [fpx, fpy, tpx, tpy] of [[pa.x+ox,pa.y+oy,pb.x+ox,pb.y+oy],[pb.x+ox,pb.y+oy,pa.x+ox,pa.y+oy]]) {
+        const ddx = tpx-fpx, ddy = tpy-fpy, dl = Math.sqrt(ddx*ddx+ddy*ddy);
+        if (dl < 1) continue;
+        const ax = fpx+(ddx/dl)*7, ay = fpy+(ddy/dl)*7;
+        annotCtx.beginPath(); annotCtx.moveTo(fpx, fpy);
+        annotCtx.lineTo(ax+(ddy/dl)*3, ay-(ddx/dl)*3);
+        annotCtx.lineTo(ax-(ddy/dl)*3, ay+(ddx/dl)*3);
+        annotCtx.closePath(); annotCtx.fill();
+      }
+      // 라벨 배경 + 텍스트
+      const mx = (pa.x+pb.x)/2+ox, my = (pa.y+pb.y)/2+oy;
+      annotCtx.font = 'bold 11px Inter, sans-serif';
+      const tw = annotCtx.measureText(label).width;
+      annotCtx.fillStyle = 'rgba(255,255,255,0.90)';
+      annotCtx.fillRect(mx-tw/2-4, my-8, tw+8, 16);
+      annotCtx.fillStyle = color; annotCtx.textAlign = 'center'; annotCtx.textBaseline = 'middle';
+      annotCtx.fillText(label, mx, my);
+      annotCtx.restore();
+    }
+    // 안장 높이 (초록)
+    dimLine(proj(sd.x, 0.3, 0), proj(sd.x, fit.saddleFromGround, 0), `안장 ${fit.saddleFromGround}cm`, '#059669');
+    // 핸들 높이 (빨강)
+    dimLine(proj(bar.x, 0.3, 0), proj(bar.x, fit.handlebarHeight, 0), `핸들 ${fit.handlebarHeight}cm`, '#DC2626');
+    // 리치 (파랑) — 위쪽에 표시
+    dimLine(proj(sd.x, fit.saddleFromGround+9, 0), proj(bar.x, fit.saddleFromGround+9, 0), `리치 ${fit.reach}cm`, '#2563EB', 1);
+    // 드롭 (주황) — 안장-핸들 높이 차이
+    dimLine(proj(bar.x+8, fit.saddleFromGround, 0), proj(bar.x+8, fit.handlebarHeight, 0), `드롭 ${fit.saddleDrop}cm`, '#D97706');
+    // 크랭크암 (보라)
+    dimLine(proj(bb.x, bb.y, 0), proj(pedalR.x, pedalR.y, 0), `크랭크 ${fit.crankLength}mm`, '#7C3AED');
+    // BB 세트백 (청록)
+    dimLine(proj(bb.x, bb.y+2, 0), proj(sd.x, bb.y+2, 0), `세트백 ${fit.setback}cm`, '#0891B2', 1);
+  }
+
   // ── Animate ──
   let rafId;
   (function animate() {
     rafId = requestAnimationFrame(animate);
     controls.update();
     renderer.render(scene, camera);
+    drawAnnotations();
   })();
   _three = { rafId, renderer, scene };
 
