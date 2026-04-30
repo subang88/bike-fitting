@@ -331,6 +331,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>
 const OPT = {
   height:   [150,210,1],
@@ -624,363 +625,183 @@ function drawBike(m, fit) {
     mesh.position.copy(pos); mesh.castShadow = true; scene.add(mesh);
   }
 
-  // ── Bike geometry (units = cm) ──
-  // De Rosa Super King 888 스타일 지오메트리
-  const WR    = 33.5;   // 700c 타이어 외경
-  const BB_H  = 27;     // BB 중심 높이
-  const CS    = 41;     // 체인스테이 수평 길이
-  const WB    = 99;     // 휠베이스
-
-  const rear  = v3(0,  WR, 0);
+  // ── 핵심 위치 좌표 (단위: cm) ──
+  const WR = 33.5, BB_H = 27, CS = 41, WB = 99;
+  const rear = v3(0, WR, 0);
   const front = v3(WB, WR, 0);
   const bb    = v3(CS, BB_H, 0);
   const sd    = v3(bb.x - fit.setback, fit.saddleFromGround, 0);
   const bar   = v3(bb.x - fit.setback + fit.reach, fit.handlebarHeight, 0);
 
-  // 시트튜브: 인심 기반 프레임 사이즈로 계산 (슬로프드 탑튜브용)
-  const stA       = 73 * Math.PI / 180;
-  const frameSize = m.inseam * 0.67;          // 컴팩트 지오메트리 프레임 사이즈
-  const stTop     = v3(bb.x - frameSize * Math.cos(stA), bb.y + frameSize * Math.sin(stA), 0);
-
-  // 헤드튜브: 포크 블레이드 길이 기반 정확한 위치 계산 (비례 정확도)
-  const htA         = 73.5 * Math.PI / 180;
-  const forkBladeLn = 37.2;   // 포크 블레이드 길이 (cm)
-  const htLen       = Math.max(10, Math.round((m.height - 163) * 0.25 + 10));  // 헤드튜브 길이 키에 비례
-  const htBot       = v3(front.x - forkBladeLn * Math.cos(htA), front.y + forkBladeLn * Math.sin(htA), 0);
-  const htTop       = v3(htBot.x - htLen * Math.cos(htA), htBot.y + htLen * Math.sin(htA), 0);
-
-  // 시트포스트 끝점 (안장 높이까지, 시트튜브 방향 연장)
-  const spLen    = (fit.saddleFromGround - stTop.y) / Math.sin(stA);
-  const spEnd    = v3(stTop.x - spLen * Math.cos(stA), stTop.y + spLen * Math.sin(stA), 0);
-
-  // ── 재질 — De Rosa 스타일 (다크카본 + 블루 + 네온옐로우) ──
-  const mFrameMain = mat(0x080C14, 0.40, 0.22);   // 다크 카본 블랙
-  const mFrameBlue = mat(0x0E4A90, 0.35, 0.25);   // 딥 블루 (포크/하부)
-  const mFrameAcc  = mat(0x8DB800, 0.20, 0.35);   // 네온 옐로우-그린 (악센트)
-  const mCarbon    = mat(0x0C1018, 0.40, 0.20);   // 카본 블랙 (핸들바)
-  const mMetal     = mat(0x9AB0C4, 0.75, 0.16);   // 알루미늄/스틸
-  const mBlack     = mat(0x121820, 0.12, 0.55);
-  const mTire      = mat(0x0A0C10, 0.05, 0.88);   // 타이어 블랙
-  const mRimCarbon = mat(0x0D1220, 0.42, 0.18);   // 카본 딥섹션 림
-  const mRimFace   = mat(0x111828, 0.38, 0.22);   // 림 측면
-  const mHub       = mat(0x252E3C, 0.65, 0.22);
-  const mSpoke     = mat(0xA8C0D4, 0.85, 0.14);   // 실버 스포크
-  const mSaddle    = mat(0x141820, 0.08, 0.75);
-  const mSkin      = mat(0xE8A87C, 0.02, 0.78);
-  const mJersey    = mat(0x1460B8, 0.04, 0.68);
-  const mShorts    = mat(0x18192A, 0.04, 0.72);
-  const mHelmet    = mat(0xF39C12, 0.06, 0.44);
-  const mGlass     = mat(0x1A2530, 0.55, 0.08);
-  const mChain     = mat(0x404858, 0.55, 0.40);
-  const mCasset    = mat(0x585E6A, 0.65, 0.26);
-  const mShoe      = mat(0x1A2238, 0.10, 0.68);
-  const mDerail    = mat(0x5C6470, 0.70, 0.22);   // 디레일러
-
-  // ── 딥섹션 카본 휠 (De Rosa ~45mm 딥섹션) ──
-  const RIM_DEPTH = 4.5;                          // 45mm 딥섹션 깊이
-  const RIM_OR    = WR - 2.4;                     // 림 외경 (타이어 바로 안쪽)
-  const RIM_IR    = RIM_OR - RIM_DEPTH;           // 스포크베드 내경
-
-  function addWheel(centre, isFront) {
-    // 타이어 (X-Y 평면, 회전 없음)
-    const tyre = new THREE.Mesh(new THREE.TorusGeometry(WR, 2.3, 20, 80), mTire);
-    tyre.position.copy(centre); tyre.castShadow = true; scene.add(tyre);
-
-    // 딥섹션 림 외벽 (원통형 측면)
-    const rimOuter = new THREE.Mesh(
-      new THREE.CylinderGeometry(RIM_OR, RIM_OR, 3.6, 72, 1, true),
-      mRimCarbon
-    );
-    rimOuter.rotation.x = Math.PI / 2;
-    rimOuter.position.copy(centre); scene.add(rimOuter);
-
-    // 림 측면 면 (앞뒤 링 모양)
-    for (const zOff of [-1.8, 1.8]) {
-      const rimFace = new THREE.Mesh(
-        new THREE.RingGeometry(RIM_IR, RIM_OR, 72),
-        mRimFace
-      );
-      rimFace.position.set(centre.x, centre.y, centre.z + zOff);
-      scene.add(rimFace);
-    }
-
-    // 스포크베드 내벽
-    const rimInner = new THREE.Mesh(
-      new THREE.CylinderGeometry(RIM_IR, RIM_IR, 3.6, 64, 1, true),
-      mat(0x181E2C, 0.35, 0.25)
-    );
-    rimInner.rotation.x = Math.PI / 2;
-    rimInner.position.copy(centre); scene.add(rimInner);
-
-    // 스포크 ×20 — X-Y 평면 방사형
-    for (let i = 0; i < 20; i++) {
-      const a = (i / 20) * Math.PI * 2;
-      addTube(
-        v3(centre.x + 3.6 * Math.cos(a), centre.y + 3.6 * Math.sin(a), centre.z),
-        v3(centre.x + RIM_IR * 0.96 * Math.cos(a), centre.y + RIM_IR * 0.96 * Math.sin(a), centre.z),
-        0.15, mSpoke
-      );
-    }
-
-    // 허브 (Z축 방향)
-    const hub = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.4, isFront ? 11 : 14, 20), mHub);
-    hub.rotation.x = Math.PI / 2;
-    hub.position.copy(centre); hub.castShadow = true; scene.add(hub);
-
-    // 허브 플랜지 (허브 양쪽 디스크)
-    for (const zOff of [isFront ? -4 : -5.5, isFront ? 4 : 5.5]) {
-      const flange = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 0.8, 18), mHub);
-      flange.rotation.x = Math.PI / 2;
-      flange.position.set(centre.x, centre.y, centre.z + zOff); scene.add(flange);
-    }
-
-    // 액슬
-    addTube(v3(centre.x, centre.y, isFront ? -9 : -11), v3(centre.x, centre.y, isFront ? 9 : 11), 0.7, mMetal);
-  }
-  addWheel(rear, false); addWheel(front, true);
-
-  // 카세트 (리어휠, 오른쪽)
-  for (let i = 0; i < 11; i++) {
-    const r2 = 5.8 + i * 0.85;
-    const cs2 = new THREE.Mesh(new THREE.TorusGeometry(r2, 0.45, 8, 36), mCasset);
-    cs2.position.set(rear.x, rear.y, 5 + i * 0.72); scene.add(cs2);
-  }
-
-  // ── 프레임 (De Rosa 다크카본 + 블루 악센트) ──
-  // 시트튜브
-  addTube(bb, stTop, 1.42, mFrameMain);
-  // 탑튜브 (슬로프드 — compact geometry)
-  addTube(stTop, htTop, 1.25, mFrameMain);
-  // 다운튜브 (가장 두껍고 눈에 띄는 튜브 — 블루)
-  addTube(bb, htBot, 1.62, mFrameBlue);
-  // 헤드튜브
-  addTube(htBot, htTop, 1.65, mFrameMain);
-  // 체인스테이 (좌우 쌍)
-  for (const z of [4.5, -4.5])
-    addTube(v3(bb.x, bb.y, z * 0.4), v3(rear.x, rear.y, z), 0.88, mFrameMain);
-  // 시트스테이 (좌우 쌍)
-  for (const z of [4.5, -4.5])
-    addTube(v3(rear.x, rear.y, z), v3(stTop.x, stTop.y + 2, z), 0.65, mFrameMain);
-  // BB 쉘
-  addBall(bb, 3.0, mMetal);
-
-  // 포크 (블루, 약간 곡선: 2분할 — htBot 기준으로 front axle까지)
-  for (const z of [4.2, -4.2]) {
-    const forkMid = v3(
-      htBot.x + (front.x - htBot.x) * 0.4 + 2.5,
-      htBot.y + (front.y - htBot.y) * 0.4,
-      z * 0.7
-    );
-    addTube(v3(htBot.x, htBot.y, z * 0.35), forkMid, 0.75, mFrameBlue);
-    addTube(forkMid, v3(front.x, front.y, z), 0.68, mFrameBlue);
-  }
-  // 포크 크라운
-  addTube(v3(htBot.x, htBot.y, -5), v3(htBot.x, htBot.y, 5), 1.1, mFrameMain);
-
-  // 네온 악센트 라인 (다운튜브 위 얇은 선)
-  addTube(
-    v3(bb.x + 1, bb.y + 3, 1.7),
-    v3(htBot.x - 1, htBot.y - 2, 1.7),
-    0.35, mFrameAcc
-  );
-
-  // 시트포스트
-  addTube(stTop, spEnd, 1.05, mMetal);
-
-  // ── 안장 ──
-  const swH = fit.saddleWidth / 10 * 0.44;
-  const saddle = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 10), mSaddle);
-  saddle.scale.set(7.8, 0.9, swH);
-  saddle.position.set(sd.x - 3, sd.y + 1.2, 0);
-  saddle.castShadow = true; scene.add(saddle);
-  // 레일
-  for (const z of [swH * 0.38, -swH * 0.38])
-    addTube(v3(sd.x - 7.5, sd.y - 0.5, z), v3(sd.x + 4, sd.y - 0.5, z), 0.36, mMetal);
-
-  // ── 스템 (스티어러 연장 + 스페이서 + 수평 스템) ──
-  const steererExtra = Math.max(0, (bar.y - htTop.y) / Math.sin(htA));
-  const stemBase = v3(htTop.x - steererExtra * Math.cos(htA), htTop.y + steererExtra * Math.sin(htA), 0);
-  addBall(htTop, 2.0, mMetal);
-  addTube(htTop, stemBase, 1.3, mMetal);                        // 스티어러 + 스페이서
-  addTube(stemBase, v3(bar.x - 2, bar.y, 0), 1.15, mMetal);    // 수평 스템
-  addBall(stemBase, 2.2, mat(0x303840, 0.5, 0.3));              // 스템 헤드
-  const stemClamp = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 1.8, 3.2, 12), mMetal);
-  stemClamp.rotation.x = Math.PI / 2;
-  stemClamp.position.set(bar.x - 1, bar.y, 0); scene.add(stemClamp);
-
-  // ── 드롭 핸들바 ──
-  const hw = fit.handlebarWidth / 2;
-  addTube(v3(bar.x, bar.y, -3.5), v3(bar.x, bar.y, 3.5), 1.4, mMetal); // 클램프
-  for (const sg of [1, -1]) {
-    const bz = sg * hw;
-    addTube(v3(bar.x, bar.y, sg * 3.5), v3(bar.x, bar.y, bz), 1.15, mCarbon);
-    addTube(v3(bar.x, bar.y, bz), v3(bar.x - 1.2, bar.y - 3.0, bz), 1.05, mCarbon);
-    addTube(v3(bar.x - 1.2, bar.y - 3.0, bz), v3(bar.x - 4.2, bar.y - 8.5, bz), 0.95, mCarbon);
-    addTube(v3(bar.x - 4.2, bar.y - 8.5, bz), v3(bar.x - 2.0, bar.y - 11.5, bz), 0.92, mCarbon);
-    // 브레이크 후드
-    const hood = new THREE.Mesh(new THREE.BoxGeometry(5.5, 2.4, 3.0), mat(0x222C38, 0.15, 0.60));
-    hood.position.set(bar.x + 0.8, bar.y - 1.8, sg * (hw - 0.6));
-    hood.rotation.z = 0.16 * sg; hood.castShadow = true; scene.add(hood);
-    // 브레이크 레버
-    addTube(
-      v3(bar.x + 1.2, bar.y - 1.5, sg * (hw - 0.6)),
-      v3(bar.x - 2.5, bar.y - 7.5, sg * (hw - 0.6)),
-      0.55, mat(0x3A4452, 0.4, 0.35)
-    );
-  }
-
-  // ── 크랭크셋 (De Rosa 스타일 컴팩트 더블) ──
-  // 체인링 X-Y 평면 (rotation 없음)
-  const chainring = new THREE.Mesh(new THREE.TorusGeometry(10.0, 0.9, 12, 52), mChain);
-  chainring.position.copy(bb); scene.add(chainring);
-  const innerRing = new THREE.Mesh(new THREE.TorusGeometry(6.8, 0.65, 10, 40), mChain);
-  innerRing.position.copy(bb); scene.add(innerRing);
-  // 스파이더 암 5개
-  for (let i = 0; i < 5; i++) {
-    const a = (i / 5) * Math.PI * 2;
-    addTube(
-      v3(bb.x + 2.5 * Math.cos(a), bb.y + 2.5 * Math.sin(a), 5.5),
-      v3(bb.x + 8.5 * Math.cos(a), bb.y + 8.5 * Math.sin(a), 5.5),
-      0.7, mat(0x303840, 0.5, 0.4)
-    );
-  }
-  // BB 스핀들 (Z축)
-  addTube(v3(bb.x, bb.y, -8), v3(bb.x, bb.y, 8), 1.38, mMetal);
-
-  // 크랭크 암 (135° = 4-5시 방향)
+  const hw         = fit.handlebarWidth / 2;
   const crankCm    = fit.crankLength / 10;
   const crankAngle = 135 * Math.PI / 180;
   const pedalR = v3(bb.x + crankCm * Math.sin(crankAngle), bb.y - crankCm * Math.cos(crankAngle),  6.0);
   const pedalL = v3(bb.x - crankCm * Math.sin(crankAngle), bb.y + crankCm * Math.cos(crankAngle), -6.0);
-  // 오른쪽 크랭크 암 (바깥쪽)
-  addTube(v3(bb.x, bb.y, 6.0), pedalR, 1.0, mCarbon);
-  addTube(v3(bb.x, bb.y, 5.2), pedalR, 0.65, mFrameAcc); // 네온 악센트 라인
-  // 왼쪽 크랭크 암
-  addTube(v3(bb.x, bb.y, -6.0), pedalL, 0.95, mCarbon);
 
-  // 페달
-  const pedGeo = new THREE.BoxGeometry(10, 1.4, 4.0);
-  for (const [pos, zd] of [[pedalR, 2.0], [pedalL, -2.0]]) {
-    const ped = new THREE.Mesh(pedGeo, mat(0x1C2228, 0.25, 0.50));
-    ped.position.copy(pos); ped.position.z += zd;
-    ped.castShadow = true; scene.add(ped);
+  // ── 라이더 재질 ──
+  const mSkin   = mat(0xE8A87C, 0.03, 0.72);
+  const mJersey = mat(0x1460B8, 0.04, 0.60);
+  const mShorts = mat(0x18192A, 0.05, 0.68);
+  const mHelmet = mat(0xF39C12, 0.06, 0.42);
+  const mGlass  = mat(0x1A2530, 0.55, 0.08);
+  const mShoe   = mat(0x202840, 0.12, 0.60);
+  const mGlove  = mat(0x1A2228, 0.15, 0.52);
+
+  // ── 라이더 생성 ──
+  function addRider() {
+    const leanDeg = {comfort:16, endurance:32, performance:46, racing:56}[m.position] || 32;
+    const lean    = leanDeg * Math.PI / 180;
+    const bmi     = m.weight / ((m.height / 100) ** 2);
+    const tW      = 4.2 + Math.max(0, (bmi - 22) * 0.18);
+    const legR    = 2.8 + Math.max(0, (bmi - 22) * 0.10);
+    const legZ    = 5.5, armZ = 3.2;
+    const shLen   = m.shoeSize / 10;
+
+    // 주요 관절 위치
+    const hipP    = v3(sd.x - 0.5, sd.y - 1.8, 0);
+    const shouldP = v3(hipP.x + m.torso * 0.94 * Math.sin(lean),
+                       hipP.y + m.torso * 0.94 * Math.cos(lean), 0);
+    const elbP    = v3(shouldP.x + (bar.x - shouldP.x) * 0.50 + 2.5 * Math.sin(lean),
+                       shouldP.y + (bar.y - shouldP.y) * 0.50 - 3.5, 0);
+    const headR2  = m.height * 0.063;
+    const neckTop = v3(shouldP.x + 1.2 * Math.sin(lean + 0.28), shouldP.y + 3.0, 0);
+    const headP   = v3(neckTop.x + headR2 * 0.20 * Math.sin(lean), neckTop.y + headR2 * 1.08, 0);
+    const thighA  = lean - 0.40;
+    const kneeR   = v3(hipP.x + m.thigh * Math.sin(thighA), hipP.y - m.thigh * Math.cos(thighA), 0);
+    const kneeLx  = hipP.x + m.thigh * Math.sin(lean + 0.32);
+    const kneeLy  = hipP.y - m.thigh * Math.cos(lean + 0.32) + 11;
+
+    // 오른쪽 다리
+    const hipRZ = v3(hipP.x, hipP.y, legZ);
+    const knRZ  = v3(kneeR.x, kneeR.y, legZ);
+    const pedRZ = v3(pedalR.x, pedalR.y, legZ);
+    addBall(hipRZ, legR + 1.5, mShorts);
+    addTube(hipRZ, knRZ,  legR + 0.8, mShorts);
+    addBall(knRZ,  legR + 0.8, mSkin);
+    addTube(knRZ,  pedRZ, legR - 0.2, mSkin);
+    const ankRZ = v3(pedalR.x - 2.0, pedalR.y + 3.0, legZ);
+    addTube(pedRZ, ankRZ, legR - 0.9, mSkin);
+    const shR = new THREE.Mesh(new THREE.BoxGeometry(shLen * 0.86, 3.0, 4.6), mShoe);
+    shR.position.set(pedalR.x + shLen * 0.16, pedalR.y + 1.5, legZ);
+    shR.castShadow = true; scene.add(shR);
+    const soleR = new THREE.Mesh(new THREE.BoxGeometry(shLen * 0.86, 0.9, 4.7), mat(0x080E18, 0.1, 0.9));
+    soleR.position.set(pedalR.x + shLen * 0.16, pedalR.y + 0.1, legZ); scene.add(soleR);
+
+    // 왼쪽 다리
+    const hipLZ = v3(hipP.x, hipP.y, -legZ);
+    const knLZ  = v3(kneeLx, kneeLy, -legZ);
+    const pedLZ = v3(pedalL.x, pedalL.y, -legZ);
+    addBall(hipLZ, legR + 1.5, mShorts);
+    addTube(hipLZ, knLZ,  legR + 0.8, mShorts);
+    addBall(knLZ,  legR + 0.8, mSkin);
+    addTube(knLZ,  pedLZ, legR - 0.2, mSkin);
+    const ankLZ = v3(pedalL.x - 2.0, pedalL.y + 3.0, -legZ);
+    addTube(pedLZ, ankLZ, legR - 0.9, mSkin);
+    const shL = new THREE.Mesh(new THREE.BoxGeometry(shLen * 0.86, 3.0, 4.6), mShoe);
+    shL.position.set(pedalL.x + shLen * 0.16, pedalL.y + 1.5, -legZ);
+    shL.castShadow = true; scene.add(shL);
+    const soleL = new THREE.Mesh(new THREE.BoxGeometry(shLen * 0.86, 0.9, 4.7), mat(0x080E18, 0.1, 0.9));
+    soleL.position.set(pedalL.x + shLen * 0.16, pedalL.y + 0.1, -legZ); scene.add(soleL);
+
+    // 몸통
+    const torsoDir = new THREE.Vector3().subVectors(shouldP, hipP);
+    const torsoLen = torsoDir.length();
+    const torsoM = new THREE.Mesh(new THREE.CylinderGeometry(tW, tW + 2.2, torsoLen, 20), mJersey);
+    torsoM.position.lerpVectors(hipP, shouldP, 0.5);
+    torsoM.quaternion.setFromUnitVectors(v3(0, 1, 0), torsoDir.clone().normalize());
+    torsoM.castShadow = true; scene.add(torsoM);
+    // 엉덩이
+    const hipPad = new THREE.Mesh(new THREE.SphereGeometry(tW + 2.8, 18, 14), mShorts);
+    hipPad.scale.set(1.0, 0.62, 1.40); hipPad.position.copy(hipP);
+    hipPad.castShadow = true; scene.add(hipPad);
+
+    // 팔 (양쪽)
+    for (const sg of [1, -1]) {
+      const shZ   = v3(shouldP.x, shouldP.y, sg * armZ);
+      const elbZ  = v3(elbP.x, elbP.y, sg * armZ);
+      const handZ = v3(bar.x - 0.8, bar.y + 0.5, sg * (hw * 0.55 + armZ * 0.45));
+      addBall(shZ, tW * 0.85, mJersey);
+      addTube(shZ, elbZ, 2.2, mJersey);
+      addBall(elbZ, 2.3, mSkin);
+      addTube(elbZ, handZ, 1.8, mSkin);
+      // 장갑
+      const glov = new THREE.Mesh(new THREE.BoxGeometry(5.8, 3.2, 4.2), mGlove);
+      glov.position.set(handZ.x + 1.5, handZ.y, handZ.z);
+      glov.rotation.z = -lean * 0.35;
+      glov.castShadow = true; scene.add(glov);
+      // 너클 구 3개
+      for (let fi = 0; fi < 3; fi++) {
+        const kn = new THREE.Mesh(new THREE.SphereGeometry(0.82, 8, 6), mat(0x10181E, 0.15, 0.55));
+        kn.position.set(handZ.x + 3.8, handZ.y - 0.2, handZ.z + (fi - 1) * 1.3);
+        scene.add(kn);
+      }
+    }
+
+    // 목
+    addTube(v3(shouldP.x, shouldP.y, 0), neckTop, 2.2, mSkin);
+    // 머리
+    addBall(headP, headR2, mSkin);
+    // 헬멧
+    const helmM = new THREE.Mesh(new THREE.SphereGeometry(headR2 * 1.22, 24, 18), mHelmet);
+    helmM.scale.set(1.0, 0.80, 1.0);
+    helmM.position.set(headP.x, headP.y + 0.8, 0);
+    helmM.castShadow = true; scene.add(helmM);
+    // 헬멧 통풍구 (어두운 슬롯)
+    for (let i = 0; i < 4; i++) {
+      const vt = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.7, headR2 * 1.5), mat(0x060810, 0.05, 0.95));
+      vt.position.set(headP.x + headR2 * 0.52 - i * headR2 * 0.32, headP.y + headR2 * 0.50, 0);
+      vt.rotation.z = -(lean + 0.12) * 0.65; scene.add(vt);
+    }
+    // 선글라스
+    for (const zo of [3.4, -3.4]) {
+      const gl = new THREE.Mesh(new THREE.TorusGeometry(2.7, 0.45, 10, 28), mGlass);
+      gl.rotation.z = Math.PI / 2;
+      gl.position.set(headP.x + headR2 * 0.62 * Math.sin(lean + 0.08), headP.y - headR2 * 0.21, zo);
+      scene.add(gl);
+    }
+    addTube(
+      v3(headP.x + headR2 * 0.62 * Math.sin(lean + 0.08), headP.y - headR2 * 0.21,  3.4),
+      v3(headP.x + headR2 * 0.62 * Math.sin(lean + 0.08), headP.y - headR2 * 0.21, -3.4),
+      0.34, mGlass
+    );
   }
 
-  // 체인
-  addTube(v3(pedalR.x, pedalR.y, 4.5), v3(bb.x - 0.5, bb.y - 10, 4.5), 0.55, mChain);
-  addTube(v3(bb.x - 0.5, bb.y - 10, 4.5), v3(rear.x + 1, rear.y + 6, 4.5), 0.55, mChain);
+  // ── GLB 바이크 모델 로드 ──
+  const loader = new THREE.GLTFLoader();
+  const loadDiv = document.createElement('div');
+  loadDiv.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,.92);color:#3B6EF8;font-weight:700;font-size:.88rem;padding:10px 18px;border-radius:8px;pointer-events:none;';
+  loadDiv.textContent = '🚴 3D 모델 로딩 중...';
+  wrap.appendChild(loadDiv);
 
-  // ── 리어 디레일러 ──
-  const rdBase = v3(rear.x + 3, rear.y - 4, 5.5);
-  addTube(v3(rear.x + 2, rear.y + 2, 5), rdBase, 0.7, mDerail);
-  // 풀리 케이지
-  const p1 = v3(rdBase.x - 2, rdBase.y - 4, 5.5);
-  const p2 = v3(rdBase.x - 1, rdBase.y - 8, 5.5);
-  addTube(rdBase, p1, 0.55, mDerail);
-  addTube(p1, p2, 0.55, mDerail);
-  // 풀리 휠 2개
-  for (const [px, py] of [[p1.x, p1.y], [p2.x, p2.y]]) {
-    const pulley = new THREE.Mesh(new THREE.TorusGeometry(1.8, 0.55, 8, 20), mChain);
-    pulley.position.set(px, py, 5.5); scene.add(pulley);
-  }
-
-  // ── 프론트 디레일러 (간략) ──
-  const fd = new THREE.Mesh(new THREE.BoxGeometry(2, 1.5, 5), mDerail);
-  fd.position.set(bb.x - 2, bb.y + 8, 0); fd.castShadow = true; scene.add(fd);
-
-  // ── Rider ──
-  const leanDeg = { comfort: 16, endurance: 32, performance: 46, racing: 56 }[m.position] || 32;
-  const lean = leanDeg * Math.PI / 180;
-
-  const hipP    = v3(sd.x, sd.y, 0);
-  const shouldP = v3(hipP.x + m.torso * Math.sin(lean), hipP.y + m.torso * Math.cos(lean), 0);
-  const elbP    = v3((shouldP.x + bar.x) * 0.5 + 2.8 * Math.sin(lean), (shouldP.y + bar.y) * 0.5 - 5.5, 0);
-
-  const thighA = lean - 0.45;
-  const kneeR  = v3(hipP.x + m.thigh * Math.sin(thighA), hipP.y - m.thigh * Math.cos(thighA), 0);
-
-  const headR2  = m.height * 0.062;
-  const neckBase = v3(shouldP.x + 0.9 * Math.sin(lean + 0.3), shouldP.y + 2.8, 0);
-  const headP   = v3(neckBase.x + headR2 * 0.22 * Math.sin(lean + 0.2), neckBase.y + headR2 * 1.18, 0);
-
-  const legZ = 5.8, armZ = 3.8;
-  const uArmL = m.arm * 0.46, fArmL = m.arm * 0.54;
-
-  // Torso (tapered)
-  const torsoDir = new THREE.Vector3().subVectors(shouldP, hipP);
-  const torsoLen2 = torsoDir.length();
-  const torsoMesh = new THREE.Mesh(new THREE.CylinderGeometry(5.2, 7.0, torsoLen2, 18), mJersey);
-  torsoMesh.position.lerpVectors(hipP, shouldP, 0.5);
-  torsoMesh.quaternion.setFromUnitVectors(v3(0,1,0), torsoDir.clone().normalize());
-  torsoMesh.castShadow = true; scene.add(torsoMesh);
-
-  // Hip pad
-  const hipPad = new THREE.Mesh(new THREE.SphereGeometry(7, 14, 10), mShorts);
-  hipPad.scale.set(0.88, 0.54, 1.28); hipPad.position.copy(hipP);
-  hipPad.castShadow = true; scene.add(hipPad);
-
-  // Arms (both sides)
-  for (const sg of [1, -1]) {
-    const shZ  = v3(shouldP.x, shouldP.y, sg * armZ);
-    const elbZ = v3(elbP.x, elbP.y, sg * armZ);
-    const barZ = v3(bar.x, bar.y, sg * (hw > armZ + 2 ? hw * 0.55 : armZ + 1));
-    addBall(shZ, 3.8, mJersey);
-    addTube(shZ, elbZ, 2.5, mJersey);   // upper arm
-    addBall(elbZ, 2.7, mSkin);
-    addTube(elbZ, barZ, 2.1, mSkin);    // forearm
-    addBall(barZ, 2.2, mSkin);          // hand
-  }
-
-  // Right leg (near, crank ~4-5 o'clock)
-  const kneeRZ = v3(kneeR.x, kneeR.y, legZ);
-  addBall(v3(hipP.x, hipP.y, legZ), 5.8, mShorts);
-  addTube(v3(hipP.x, hipP.y, legZ), kneeRZ, 4.0, mShorts);
-  addBall(kneeRZ, 4.3, mSkin);
-  addTube(kneeRZ, pedalR, 3.2, mSkin);
-  const shoeR = new THREE.Mesh(new THREE.BoxGeometry(m.shoeSize * 0.032, 2.8, 4.5), mShoe);
-  shoeR.position.set(pedalR.x + 1, pedalR.y + 0.5, pedalR.z + 1.5); shoeR.castShadow = true; scene.add(shoeR);
-
-  // Left leg (far, crank ~10-11 o'clock)
-  addBall(v3(hipP.x, hipP.y, -legZ), 5.8, mShorts);
-  const kneeLx = hipP.x + m.thigh * Math.sin(lean + 0.3);
-  const kneeLy = hipP.y - m.thigh * Math.cos(lean + 0.3) + 13;
-  const kneeLZ = v3(kneeLx, kneeLy, -legZ);
-  addTube(v3(hipP.x, hipP.y, -legZ), kneeLZ, 4.0, mShorts);
-  addBall(kneeLZ, 4.3, mSkin);
-  addTube(kneeLZ, v3(pedalL.x, pedalL.y, -legZ), 3.2, mSkin);
-  const shoeL = new THREE.Mesh(new THREE.BoxGeometry(m.shoeSize * 0.032, 2.8, 4.5), mShoe);
-  shoeL.position.set(pedalL.x + 1, pedalL.y + 0.5, -legZ - 1.5); shoeL.castShadow = true; scene.add(shoeL);
-
-  // Neck
-  addTube(v3(shouldP.x, shouldP.y, 0), neckBase, 2.4, mSkin);
-
-  // Head
-  addBall(headP, headR2, mSkin);
-
-  // Helmet
-  const helmMesh = new THREE.Mesh(new THREE.SphereGeometry(headR2 * 1.2, 22, 16), mHelmet);
-  helmMesh.scale.set(1, 0.76, 1); helmMesh.position.set(headP.x, headP.y + 1, headP.z);
-  helmMesh.castShadow = true; scene.add(helmMesh);
-  // Helmet vents (darker strips)
-  for (let i = 0; i < 4; i++) {
-    const vent = new THREE.Mesh(new THREE.BoxGeometry(2, 0.5, headR2 * 1.6), mat(0xC47D08, 0.1, 0.6));
-    vent.position.set(headP.x + headR2 * 0.4 - i * headR2 * 0.28, headP.y + headR2 * 0.55, headP.z);
-    vent.rotation.z = -lean * 0.6; scene.add(vent);
-  }
-
-  // Sunglasses
-  for (const zOff of [3.0, -3.0]) {
-    const gl = new THREE.Mesh(new THREE.TorusGeometry(2.4, 0.48, 8, 20), mGlass);
-    gl.rotation.z = Math.PI / 2;
-    gl.position.set(headP.x + headR2 * 0.65 * Math.sin(lean + 0.08), headP.y - headR2 * 0.2, zOff);
-    scene.add(gl);
-  }
-  // Glasses bridge
-  addTube(
-    v3(headP.x + headR2 * 0.65 * Math.sin(lean + 0.08), headP.y - headR2 * 0.2, 3.0),
-    v3(headP.x + headR2 * 0.65 * Math.sin(lean + 0.08), headP.y - headR2 * 0.2, -3.0),
-    0.38, mGlass
+  loader.load('./road_bike.glb',
+    (gltf) => {
+      loadDiv.remove();
+      const bike = gltf.scene;
+      bike.traverse(c => {
+        if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; }
+      });
+      // 방향 보정: 긴 축이 X
+      const b0 = new THREE.Box3().setFromObject(bike); const s0 = new THREE.Vector3(); b0.getSize(s0);
+      if (s0.z > s0.x) bike.rotation.y = Math.PI / 2;
+      // 스케일: 휠베이스에 맞춤
+      const b1 = new THREE.Box3().setFromObject(bike); const s1 = new THREE.Vector3(); b1.getSize(s1);
+      bike.scale.setScalar(WB / s1.x);
+      // 위치 정렬: 바닥 y=0, X 중심 WB/2
+      const b2 = new THREE.Box3().setFromObject(bike); const c2 = new THREE.Vector3(); b2.getCenter(c2);
+      bike.position.set(WB / 2 - c2.x, -b2.min.y, -c2.z);
+      scene.add(bike);
+      addRider();
+    },
+    undefined,
+    (err) => {
+      console.error('GLB load error', err);
+      loadDiv.textContent = '⚠ 모델 로드 실패';
+      setTimeout(() => loadDiv.remove(), 3000);
+      addRider();
+    }
   );
+
 
   // ── 수치 오버레이 ──
   function drawAnnotations() {
