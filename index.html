@@ -725,6 +725,14 @@ function drawBike(m, fit) {
         }
       }
 
+      // ── 시각적 위치 보정 (사용자 측정 오프셋) ──
+      sd.x  -= 1.5;   // 안장 마커: 실제보다 1.5cm 오른쪽 → 왼쪽으로 보정
+      bar.x -= 3.0;   // 핸들 마커: 실제보다 3cm 오른쪽   → 왼쪽으로 보정
+      bb.y  -= 3.0;   // BB 마커:   실제보다 3cm 위        → 아래로 보정
+      // BB x는 0.2mm 오차로 무시
+      pedalR.x = bb.x + crankCm * Math.sin(crankAngle);
+      pedalR.y = bb.y - crankCm * Math.cos(crankAngle);
+
       addMarkers();
     },
     undefined,
