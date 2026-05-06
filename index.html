@@ -707,8 +707,22 @@ function drawBike(m, fit) {
           bar.y = best.box.max.y;
         }
 
-        // BB X/Y는 계산값(CS=41, BB_H=27) 유지
-        // → 잘못된 메시 감지로 sd.x, bar.x 등이 연쇄적으로 틀어지는 것을 방지
+        // BB: 계산 예상위치(CS=41, BB_H=27) ±8cm 이내 메시만 허용
+        // (범위 밖이면 계산값 유지 → 연쇄 오류 방지)
+        const crankArea = meshInfos.filter(m =>
+          m.ct.x > CS - 10 && m.ct.x < CS + 10 &&
+          m.ct.y > 15      && m.ct.y < 38
+        );
+        if (crankArea.length > 0) {
+          const bbBest = crankArea.reduce((a, b) =>
+            Math.hypot(b.ct.x - CS, b.ct.y - BB_H) < Math.hypot(a.ct.x - CS, a.ct.y - BB_H) ? b : a
+          );
+          if (Math.hypot(bbBest.ct.x - CS, bbBest.ct.y - BB_H) < 8) {
+            bb.x = bbBest.ct.x; bb.y = bbBest.ct.y;
+            sd.x = bb.x - fit.setback;
+            bar.x = sd.x + fit.reach;
+          }
+        }
       }
 
       addMarkers();
