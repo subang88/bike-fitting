@@ -981,10 +981,28 @@ function drawBike(m, fit) {
     dimLine(proj(bb.x, bb.y + 7, 0), proj(sd.x, bb.y + 7, 0),
             `세트백 ${fit.setback}cm`, C.setbk, 1, 18);
 
-    // ── 대각선 ──
-    // 8. 크랭크암 (BB→페달)
-    dimLine(proj(bb.x, bb.y, 0), proj(pedalR.x, pedalR.y, 0),
-            `크랭크암 ${fit.crankLength}mm`, C.crank, -1, 18);
+    // ── 크랭크암 수치 (화살표 없이 페달 옆 콜아웃) ──
+    {
+      const pp = proj(pedalR.x, pedalR.y, 0);
+      const label = `크랭크암 ${fit.crankLength}mm`;
+      annotCtx.save();
+      annotCtx.font = 'bold 11.5px Inter,sans-serif';
+      const lw2 = annotCtx.measureText(label).width + 10;
+      const lx2 = pp.x - lw2 - 8, ly2 = pp.y + 2;
+      annotCtx.fillStyle = 'rgba(255,255,255,0.95)';
+      annotCtx.strokeStyle = C.crank; annotCtx.lineWidth = 1.5;
+      if(annotCtx.roundRect){
+        annotCtx.beginPath(); annotCtx.roundRect(lx2, ly2-9, lw2, 18, 4);
+        annotCtx.fill(); annotCtx.stroke();
+      } else {
+        annotCtx.fillRect(lx2, ly2-9, lw2, 18);
+        annotCtx.strokeRect(lx2, ly2-9, lw2, 18);
+      }
+      annotCtx.fillStyle = C.crank; annotCtx.textAlign = 'center';
+      annotCtx.textBaseline = 'middle';
+      annotCtx.fillText(label, lx2 + lw2/2, ly2);
+      annotCtx.restore();
+    }
 
     // ── 핸들 넓이 콜아웃 (드롭·핸들높이와 겹치지 않도록 핸들 위 왼쪽) ──
     {
