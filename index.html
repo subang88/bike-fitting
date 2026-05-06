@@ -642,17 +642,17 @@ function drawBike(m, fit) {
   function addMarkers() {
     const em = (hex, emx) => new THREE.MeshStandardMaterial({color:hex, emissive:emx, roughness:0.25, metalness:0.1});
     const tr = (hex) => new THREE.MeshStandardMaterial({color:hex, transparent:true, opacity:0.30, roughness:0.9});
-    // 주요 피팅 포인트 발광 구
-    addBall(v3(sd.x, fit.saddleFromGround, 0),  2.4, em(0xEF4444, 0x7F1D1D));  // 안장 (빨강)
-    addBall(v3(bar.x, fit.handlebarHeight, 0),   2.4, em(0x3B82F6, 0x1E3A8A));  // 핸들 (파랑)
-    addBall(bb, 2.2, em(0x10B981, 0x064E3B));                                    // BB   (초록)
-    addBall(pedalR, 1.8, em(0xA78BFA, 0x4C1D95));                                // 페달 (보라)
+    // 주요 피팅 포인트 발광 구 (sd.y, bar.y, bb.y 는 GLB 실측 위치로 갱신됨)
+    addBall(v3(sd.x, sd.y, 0),   2.4, em(0xEF4444, 0x7F1D1D));  // 안장 (빨강)
+    addBall(v3(bar.x, bar.y, 0), 2.4, em(0x3B82F6, 0x1E3A8A));  // 핸들 (파랑)
+    addBall(bb, 2.2, em(0x10B981, 0x064E3B));                     // BB   (초록)
+    addBall(pedalR, 1.8, em(0xA78BFA, 0x4C1D95));                 // 페달 (보라)
     // 반투명 3D 참조선
-    addTube(v3(sd.x, 0.4, 0), v3(sd.x, fit.saddleFromGround, 0), 0.30, tr(0xEF4444));   // 안장 수직
-    addTube(v3(bar.x, 0.4, 0), v3(bar.x, fit.handlebarHeight, 0), 0.30, tr(0x3B82F6));  // 핸들 수직
-    addTube(v3(sd.x, fit.saddleFromGround, 0), v3(bar.x, fit.saddleFromGround, 0), 0.22, tr(0xA855F7)); // 리치
-    addTube(v3(bb.x, BB_H + 6, 0), v3(sd.x, BB_H + 6, 0), 0.22, tr(0x06B6D4));  // 세트백
-    addTube(v3(bb.x, 0.4, 0), bb, 0.22, tr(0x10B981));                           // BB 높이
+    addTube(v3(sd.x, 0.4, 0), v3(sd.x, sd.y, 0),   0.30, tr(0xEF4444));          // 안장 수직
+    addTube(v3(bar.x, 0.4, 0), v3(bar.x, bar.y, 0), 0.30, tr(0x3B82F6));         // 핸들 수직
+    addTube(v3(sd.x, sd.y, 0), v3(bar.x, sd.y, 0),  0.22, tr(0xA855F7));         // 리치 수평
+    addTube(v3(bb.x, bb.y + 6, 0), v3(sd.x, bb.y + 6, 0), 0.22, tr(0x06B6D4));  // 세트백
+    addTube(v3(bb.x, 0.4, 0), bb, 0.22, tr(0x10B981));                            // BB 높이
   }
 
   // ── GLB 바이크 모델 로드 ──
@@ -674,6 +674,58 @@ function drawBike(m, fit) {
       const b2 = new THREE.Box3().setFromObject(bike); const c2 = new THREE.Vector3(); b2.getCenter(c2);
       bike.position.set(WB / 2 - c2.x, -b2.min.y, -c2.z);
       scene.add(bike);
+
+      // ── GLB 실측 부품 위치 감지 ──
+      // 스케일/위치 반영 후 각 메시의 월드 좌표 바운딩박스를 스캔해
+      // 실제 안장·핸들·BB 위치를 찾아 sd/bar/bb를 업데이트한다.
+      bike.updateMatrixWorld(true);
+      const meshInfos = [];
+      bike.traverse(node => {
+        if (!node.isMesh) return;
+        const box = new THREE.Box3().setFromObject(node);
+        if (box.isEmpty()) return;
+        const sz = new THREE.Vector3(), ct = new THREE.Vector3();
+        box.getSize(sz); box.getCenter(ct);
+        meshInfos.push({ box, sz, ct });
+      });
+
+      if (meshInfos.length > 0) {
+        // 휠 메시 제외: WB=99 스케일에서 직경 ~67cm → X·Y 모두 40 이상인 것
+        const nonWheel = meshInfos.filter(m => !(m.sz.y > 40 && m.sz.x > 40));
+
+        // 안장: 후방 구간(x 10~55)에서 최고점 메시
+        const rearMeshes = nonWheel.filter(m => m.ct.x > 10 && m.ct.x < 55);
+        if (rearMeshes.length > 0) {
+          const best = rearMeshes.reduce((a, b) => b.box.max.y > a.box.max.y ? b : a);
+          sd.y = best.box.max.y;
+        }
+
+        // 핸들: 전방 구간(x 58~92)에서 최고점 메시
+        const frontMeshes = nonWheel.filter(m => m.ct.x > 58 && m.ct.x < 92);
+        if (frontMeshes.length > 0) {
+          const best = frontMeshes.reduce((a, b) => b.box.max.y > a.box.max.y ? b : a);
+          bar.y = best.box.max.y;
+        }
+
+        // BB: 계산값(CS=41, BB_H=27) 에 가장 가까운 메시 중심 (반경 25cm 이내)
+        let bbBest = null, bbBestDist = 25;
+        for (const m of meshInfos) {
+          if (m.ct.x < 25 || m.ct.x > 65 || m.ct.y > 45) continue;
+          const d = Math.hypot(m.ct.x - CS, m.ct.y - BB_H);
+          if (d < bbBestDist) { bbBestDist = d; bbBest = m; }
+        }
+        if (bbBest) {
+          bb.x = bbBest.ct.x; bb.y = bbBest.ct.y;
+          // BB X 이동에 맞춰 안장·핸들 X도 재계산
+          sd.x  = bb.x - fit.setback;
+          bar.x = sd.x + fit.reach;
+        }
+
+        // 페달 위치를 갱신된 BB 기준으로 재계산
+        pedalR.x = bb.x + crankCm * Math.sin(crankAngle);
+        pedalR.y = bb.y - crankCm * Math.cos(crankAngle);
+      }
+
       addMarkers();
     },
     undefined,
@@ -771,35 +823,36 @@ function drawBike(m, fit) {
       bb:'#059669', bbsad:'#B45309'
     };
 
+    // sd.y / bar.y / bb.y 는 GLB 실측 위치 (감지 전까지는 계산값 사용)
     // 1. 안장 높이 (좌측)
-    dimLine(proj(sd.x,0.5,0), proj(sd.x,fit.saddleFromGround,0),
+    dimLine(proj(sd.x,0.5,0), proj(sd.x,sd.y,0),
             `안장높이 ${fit.saddleFromGround}cm`, C.saddle, -1, 34);
     // 2. 핸들 높이 (더 왼쪽)
-    dimLine(proj(bar.x,0.5,0), proj(bar.x,fit.handlebarHeight,0),
+    dimLine(proj(bar.x,0.5,0), proj(bar.x,bar.y,0),
             `핸들높이 ${fit.handlebarHeight}cm`, C.bar, -1, 64);
     // 3. 드롭 (우측)
-    dimLine(proj(bar.x+8,fit.saddleFromGround,0), proj(bar.x+8,fit.handlebarHeight,0),
+    dimLine(proj(bar.x+8,sd.y,0), proj(bar.x+8,bar.y,0),
             `드롭 ${fit.saddleDrop}cm`, C.drop, 1, 28);
     // 4. 리치 (안장 위 수평)
-    dimLine(proj(sd.x,fit.saddleFromGround+10,0), proj(bar.x,fit.saddleFromGround+10,0),
+    dimLine(proj(sd.x,sd.y+10,0), proj(bar.x,sd.y+10,0),
             `리치 ${fit.reach}cm`, C.reach, 1, 24);
     // 5. 세트백 (BB+7 수평)
-    dimLine(proj(bb.x,BB_H+7,0), proj(sd.x,BB_H+7,0),
+    dimLine(proj(bb.x,bb.y+7,0), proj(sd.x,bb.y+7,0),
             `세트백 ${fit.setback}cm`, C.setbk, 1, 22);
     // 6. 크랭크암 (BB→페달)
     dimLine(proj(bb.x,bb.y,0), proj(pedalR.x,pedalR.y,0),
             `크랭크암 ${fit.crankLength}mm`, C.crank, -1, 20);
     // 7. BB 높이 (지면→BB)
-    dimLine(proj(bb.x-6,0.5,0), proj(bb.x-6,BB_H,0),
+    dimLine(proj(bb.x-6,0.5,0), proj(bb.x-6,bb.y,0),
             `BB높이 ${BB_H}cm`, C.bb, -1, 18);
     // 8. BB-안장 거리 (수직)
-    dimLine(proj(sd.x+8,BB_H,0), proj(sd.x+8,fit.saddleFromGround,0),
+    dimLine(proj(sd.x+8,bb.y,0), proj(sd.x+8,sd.y,0),
             `BB-안장 ${fit.saddleFromBB}cm`, C.bbsad, 1, 20);
 
     // 포인트 레이블
-    dotLabel(sd.x, fit.saddleFromGround, 0, '안장', C.saddle);
-    dotLabel(bar.x, fit.handlebarHeight, 0, '핸들', C.bar);
-    dotLabel(bb.x, BB_H, 0, 'BB', C.bb);
+    dotLabel(sd.x, sd.y, 0, '안장', C.saddle);
+    dotLabel(bar.x, bar.y, 0, '핸들', C.bar);
+    dotLabel(bb.x, bb.y, 0, 'BB', C.bb);
     dotLabel(pedalR.x, pedalR.y, 0, '페달', C.crank);
   }
 
