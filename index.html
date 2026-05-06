@@ -707,23 +707,8 @@ function drawBike(m, fit) {
           bar.y = best.box.max.y;
         }
 
-        // BB: 계산값(CS=41, BB_H=27) 에 가장 가까운 메시 중심 (반경 25cm 이내)
-        let bbBest = null, bbBestDist = 25;
-        for (const m of meshInfos) {
-          if (m.ct.x < 25 || m.ct.x > 65 || m.ct.y > 45) continue;
-          const d = Math.hypot(m.ct.x - CS, m.ct.y - BB_H);
-          if (d < bbBestDist) { bbBestDist = d; bbBest = m; }
-        }
-        if (bbBest) {
-          bb.x = bbBest.ct.x; bb.y = bbBest.ct.y;
-          // BB X 이동에 맞춰 안장·핸들 X도 재계산
-          sd.x  = bb.x - fit.setback;
-          bar.x = sd.x + fit.reach;
-        }
-
-        // 페달 위치를 갱신된 BB 기준으로 재계산
-        pedalR.x = bb.x + crankCm * Math.sin(crankAngle);
-        pedalR.y = bb.y - crankCm * Math.cos(crankAngle);
+        // BB X/Y는 계산값(CS=41, BB_H=27) 유지
+        // → 잘못된 메시 감지로 sd.x, bar.x 등이 연쇄적으로 틀어지는 것을 방지
       }
 
       addMarkers();
@@ -824,84 +809,72 @@ function drawBike(m, fit) {
       bb:'#059669', bbsad:'#B45309', hw:'#0D9488'
     };
 
-    // ── 좌측 수직 치수 (안장 쪽) ──
-    // 1. 안장높이: 지면→안장, 왼쪽으로 크게 오프셋
-    dimLine(proj(sd.x,0.5,0), proj(sd.x,sd.y,0),
-            `안장높이 ${fit.saddleFromGround}cm`, C.saddle, -1, 82);
+    // ※ offDir 규칙:
+    //   • 위쪽 방향 선(지면→높이): offDir=1 → 오른쪽, offDir=-1 → 왼쪽
+    //   • 아래쪽 방향 선(높이→지면): offDir=-1 → 오른쪽, offDir=1 → 왼쪽
+    //   • 오른쪽 방향 선(수평):  offDir=-1 → 위, offDir=1 → 아래
+    //   • 왼쪽 방향 선(수평):   offDir=1 → 위, offDir=-1 → 아래
 
-    // 2. BB높이: 지면→BB, 중간 오프셋
-    dimLine(proj(bb.x,0.5,0), proj(bb.x,bb.y,0),
-            `BB높이 ${BB_H}cm`, C.bb, -1, 52);
+    // ── 좌측 컬럼: 안장·BB 높이 ──
+    // 1. 안장높이 (↑ upward → offDir=-1 = LEFT)
+    dimLine(proj(sd.x, 0.5, 0), proj(sd.x, sd.y, 0),
+            `안장높이 ${fit.saddleFromGround}cm`, C.saddle, -1, 90);
+    // 2. BB높이 (↑ upward → offDir=-1 = LEFT, bb.x 기준)
+    dimLine(proj(bb.x, 0.5, 0), proj(bb.x, bb.y, 0),
+            `BB높이 ${BB_H}cm`, C.bb, -1, 56);
 
-    // 3. BB-안장 거리: BB높이→안장높이, 안장 우측
-    dimLine(proj(sd.x+6,bb.y,0), proj(sd.x+6,sd.y,0),
+    // ── 중간: BB-안장 거리 ──
+    // 3. BB-안장 (↑ upward from bb.y to sd.y, at sd.x+4 → offDir=1 = RIGHT)
+    dimLine(proj(sd.x + 4, bb.y, 0), proj(sd.x + 4, sd.y, 0),
             `BB-안장 ${fit.saddleFromBB}cm`, C.bbsad, 1, 22);
 
-    // ── 우측 수직 치수 (핸들 쪽) ──
-    // 4. 핸들높이: 지면→핸들, 오른쪽으로 오프셋
-    dimLine(proj(bar.x,0.5,0), proj(bar.x,bar.y,0),
-            `핸들높이 ${fit.handlebarHeight}cm`, C.bar, 1, 62);
+    // ── 우측 컬럼: 핸들높이·드롭 ──
+    // 4. 핸들높이 (↑ upward → offDir=1 = RIGHT, 58px)
+    dimLine(proj(bar.x, 0.5, 0), proj(bar.x, bar.y, 0),
+            `핸들높이 ${fit.handlebarHeight}cm`, C.bar, 1, 58);
+    // 5. 드롭: sd.y(안장높이) → bar.y(핸들높이) = 위→아래 방향(↓ downward)
+    //    downward → offDir=-1 = RIGHT, 88px (핸들높이 58px보다 더 오른쪽)
+    dimLine(proj(bar.x, sd.y, 0), proj(bar.x, bar.y, 0),
+            `드롭 ${fit.saddleDrop}cm`, C.drop, -1, 88);
 
-    // 5. 드롭: 안장높이레벨→핸들높이레벨 (어느 두 지점인지 참조선으로 명확히)
-    {
-      const pSD  = proj(sd.x,  sd.y,  0);
-      const pBar = proj(bar.x, bar.y, 0);
-      const dX   = bar.x + 7;
-      const pDT  = proj(dX, sd.y,  0);
-      const pDB  = proj(dX, bar.y, 0);
-      annotCtx.save();
-      annotCtx.strokeStyle = C.drop; annotCtx.lineWidth = 1.1; annotCtx.setLineDash([5,3]);
-      annotCtx.beginPath(); annotCtx.moveTo(pSD.x,  pSD.y);  annotCtx.lineTo(pDT.x, pDT.y); annotCtx.stroke();
-      annotCtx.beginPath(); annotCtx.moveTo(pBar.x, pBar.y); annotCtx.lineTo(pDB.x, pDB.y); annotCtx.stroke();
-      annotCtx.restore();
-      dimLine(pDT, pDB, `드롭 ${fit.saddleDrop}cm`, C.drop, 1, 28);
-    }
-
-    // ── 수평 치수 ──
-    // 6. 리치: 안장X→핸들X, 카메라 시야 안에 드는 중간 높이
-    const reachY = bb.y + (sd.y - bb.y) * 0.55;
-    dimLine(proj(sd.x,reachY,0), proj(bar.x,reachY,0),
+    // ── 수평: 리치·세트백 ──
+    // 6. 리치: 안장X→핸들X, 높이 = BB와 안장 중간 (→ rightward → offDir=-1 = UP)
+    const reachY = bb.y + (sd.y - bb.y) * 0.48;
+    dimLine(proj(sd.x, reachY, 0), proj(bar.x, reachY, 0),
             `리치 ${fit.reach}cm`, C.reach, -1, 26);
+    // 7. 세트백: bb.x→sd.x (← leftward → offDir=1 = UP)
+    dimLine(proj(bb.x, bb.y + 7, 0), proj(sd.x, bb.y + 7, 0),
+            `세트백 ${fit.setback}cm`, C.setbk, 1, 18);
 
-    // 7. 세트백: BB X→안장 X
-    dimLine(proj(bb.x,bb.y+8,0), proj(sd.x,bb.y+8,0),
-            `세트백 ${fit.setback}cm`, C.setbk, -1, 20);
-
-    // ── 대각선/기타 ──
+    // ── 대각선 ──
     // 8. 크랭크암 (BB→페달)
-    dimLine(proj(bb.x,bb.y,0), proj(pedalR.x,pedalR.y,0),
+    dimLine(proj(bb.x, bb.y, 0), proj(pedalR.x, pedalR.y, 0),
             `크랭크암 ${fit.crankLength}mm`, C.crank, -1, 18);
 
-    // 9. 핸들 넓이: Z축(깊이) 방향으로 핸들 양 끝 투영
+    // ── 핸들 넓이 콜아웃 (드롭·핸들높이와 겹치지 않도록 핸들 위 왼쪽) ──
     {
-      const bL = proj(bar.x, bar.y, hw);
-      const bR = proj(bar.x, bar.y, -hw);
-      const dist = Math.hypot(bL.x-bR.x, bL.y-bR.y);
-      if (dist > 10) {
-        dimLine(bL, bR, `핸들넓이 ${fit.handlebarWidth}cm`, C.hw, 1, 14);
+      const ph  = proj(bar.x - 10, bar.y + 4, 0);
+      const label = `핸들넓이 ${fit.handlebarWidth}cm`;
+      const ty  = ph.y - 46;
+      annotCtx.save();
+      annotCtx.font = 'bold 11.5px Inter,sans-serif';
+      const lw2 = annotCtx.measureText(label).width + 10;
+      const lx2 = ph.x - lw2 / 2;
+      annotCtx.strokeStyle = C.hw; annotCtx.lineWidth = 1.2; annotCtx.setLineDash([3,2]);
+      annotCtx.beginPath(); annotCtx.moveTo(ph.x, ph.y); annotCtx.lineTo(ph.x, ty + 9); annotCtx.stroke();
+      annotCtx.setLineDash([]);
+      annotCtx.fillStyle = 'rgba(255,255,255,0.95)'; annotCtx.strokeStyle = C.hw; annotCtx.lineWidth = 1.5;
+      if(annotCtx.roundRect){
+        annotCtx.beginPath(); annotCtx.roundRect(lx2, ty-9, lw2, 18, 4); annotCtx.fill(); annotCtx.stroke();
       } else {
-        // 측면에서 보면 Z방향이 압축되므로 콜아웃으로 표시
-        const ph = proj(bar.x, bar.y + 4, 0);
-        const label = `핸들넓이 ${fit.handlebarWidth}cm`;
-        annotCtx.save();
-        annotCtx.font = 'bold 11.5px Inter,sans-serif';
-        const lw2 = annotCtx.measureText(label).width + 10;
-        const lx2 = ph.x - lw2/2, ly2 = ph.y - 32;
-        // 리더선
-        annotCtx.strokeStyle = C.hw; annotCtx.lineWidth = 1.2; annotCtx.setLineDash([3,2]);
-        annotCtx.beginPath(); annotCtx.moveTo(ph.x, ph.y); annotCtx.lineTo(ph.x, ly2+9); annotCtx.stroke();
-        annotCtx.setLineDash([]);
-        // 배경
-        annotCtx.fillStyle = 'rgba(255,255,255,0.95)'; annotCtx.strokeStyle = C.hw; annotCtx.lineWidth = 1.5;
-        if(annotCtx.roundRect){annotCtx.beginPath();annotCtx.roundRect(lx2,ly2-9,lw2,18,4);annotCtx.fill();annotCtx.stroke();}
-        else{annotCtx.fillRect(lx2,ly2-9,lw2,18);annotCtx.strokeRect(lx2,ly2-9,lw2,18);}
-        annotCtx.fillStyle = C.hw; annotCtx.textAlign = 'center'; annotCtx.textBaseline = 'middle';
-        annotCtx.fillText(label, ph.x, ly2);
-        annotCtx.restore();
+        annotCtx.fillRect(lx2, ty-9, lw2, 18); annotCtx.strokeRect(lx2, ty-9, lw2, 18);
       }
+      annotCtx.fillStyle = C.hw; annotCtx.textAlign = 'center'; annotCtx.textBaseline = 'middle';
+      annotCtx.fillText(label, ph.x, ty);
+      annotCtx.restore();
     }
 
-    // ── 포인트 레이블 (위치에 따라 텍스트 방향 자동 조정) ──
+    // ── 포인트 레이블 ──
     dotLabel(sd.x,  sd.y,  0, '안장', C.saddle);
     dotLabel(bar.x, bar.y, 0, '핸들', C.bar);
     dotLabel(bb.x,  bb.y,  0, 'BB',   C.bb);
