@@ -120,6 +120,35 @@
     .ftext{color:var(--t2);line-height:1.5;}
     .ftext strong{color:var(--t1);}
 
+    .info-section{background:var(--card);border:1px solid var(--bd);border-radius:10px;margin-bottom:14px;overflow:hidden;}
+    .info-toggle{width:100%;background:none;border:none;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:inherit;text-align:left;}
+    .info-chevron{color:var(--t3);font-size:0.75rem;transition:transform .2s;flex-shrink:0;}
+    .info-section.open .info-chevron{transform:rotate(180deg);}
+    .info-body{display:none;padding:0 16px 16px;}
+    .info-section.open .info-body{display:block;}
+
+    .basis-table{width:100%;border-collapse:collapse;font-size:0.77rem;margin-top:4px;}
+    .basis-table th{text-align:left;padding:7px 10px;background:var(--card2);border-bottom:2px solid var(--bd);font-size:0.7rem;color:var(--t2);font-weight:600;}
+    .basis-table td{padding:7px 10px;border-bottom:1px solid var(--bd);vertical-align:top;line-height:1.55;}
+    .basis-table tr:last-child td{border-bottom:none;}
+    .basis-formula{color:var(--accent);font-family:monospace;font-size:0.74rem;}
+    .basis-result{font-weight:700;color:var(--t1);font-size:0.74rem;}
+    @media(max-width:640px){.basis-table thead{display:none;}.basis-table td{display:block;padding:4px 10px;}.basis-table tr{border-bottom:1px solid var(--bd);display:block;padding:8px 0;}}
+
+    .cleat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-top:6px;}
+    .cleat-item{background:var(--card2);border:1px solid var(--bd);border-radius:8px;padding:12px 14px;}
+    .cleat-item-title{font-size:0.8rem;font-weight:700;color:var(--t1);margin-bottom:5px;display:flex;align-items:center;gap:6px;}
+    .cleat-item-val{font-size:1.05rem;font-weight:800;color:var(--accent);margin-bottom:5px;}
+    .cleat-item-desc{font-size:0.72rem;color:var(--t2);line-height:1.55;}
+
+    .symptom-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-top:6px;}
+    .symptom-item{background:var(--card2);border:1px solid var(--bd);border-radius:8px;padding:11px 14px;}
+    .symptom-head{margin-bottom:7px;}
+    .symptom-name{font-size:0.82rem;font-weight:700;color:var(--t1);}
+    .symptom-cause{font-size:0.7rem;color:var(--t3);margin-top:1px;}
+    .symptom-adj-item{font-size:0.74rem;color:var(--t2);padding:2px 0 2px 14px;position:relative;line-height:1.45;}
+    .symptom-adj-item::before{content:'→';position:absolute;left:0;color:var(--accent);font-weight:700;font-size:0.7rem;}
+
     .viz-wrap{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:18px 16px 14px;margin-bottom:16px;}
     .viz-title{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--t3);text-align:center;margin-bottom:14px;}
     #svgWrap{overflow-x:auto;}
@@ -320,11 +349,14 @@
     <div class="res-header"><h2>🔧 피팅 수치</h2><p id="resSub"></p></div>
     <div class="res-grid" id="resGrid"></div>
     <div class="fitcheck"><h3>✅ 피팅 적합도 분석</h3><div class="fitrows" id="fitRows"></div></div>
+    <div id="basisWrap"></div>
     <div class="viz-wrap">
       <div class="viz-title">📐 자전거 피팅 시각화 (측면도)</div>
       <div id="svgWrap"></div>
       <div class="viz-legend" id="vizLeg"></div>
     </div>
+    <div id="cleatWrap"></div>
+    <div id="symptomWrap"></div>
   </div>
 
 </div>
@@ -396,6 +428,9 @@ function calculate() {
   const fit = compute(m);
   renderCards(m, fit);
   renderFitCheck(m, fit);
+  renderBasis(m, fit);
+  renderCleat(m, fit);
+  renderSymptom();
   drawBike(m, fit);
   G('results').classList.add('show');
   setTimeout(()=>G('results').scrollIntoView({behavior:'smooth',block:'start'}), 80);
@@ -510,6 +545,141 @@ function renderFitCheck(m, fit) {
     const cls=c.ok?'g':c.warn?'w':'b';
     return `<div class="fitrow"><div class="fdot ${cls}"></div><div class="ftext"><strong>${c.label}</strong> — ${c.msg(c.ok)}</div></div>`;
   }).join('');
+}
+
+function renderBasis(m, fit) {
+  const posLabel = {comfort:'컴포트',endurance:'엔듀런스',performance:'퍼포먼스',racing:'레이싱'};
+  const flexLabel = {very_flexible:'매우 유연',flexible:'유연',average:'보통',stiff:'뻣뻣함'};
+  const flexF = {very_flexible:0,flexible:0.25,average:0.55,stiff:0.85}[m.flexibility]??0.55;
+  const dropRange = {comfort:'0~2',endurance:'3~6',performance:'6~10',racing:'9~14'}[m.position]||'4~8';
+  const posMult = {comfort:0.82,endurance:0.90,performance:0.97,racing:1.04}[m.position]||0.92;
+  const posAdj = {comfort:2,endurance:0,performance:0,racing:-1}[m.position]||0;
+  const twRaw = m.shoulder + posAdj;
+  const sitEstimated = m.sitBone > 0 ? `좌골 ${m.sitBone}mm` : `어깨 비율 추정 ≈${Math.round(m.shoulder*10*0.27+15)}mm`;
+
+  const rows = [
+    ['안장 높이', `인심 × 0.885 + 27`, `${m.inseam} × 0.885 + 27 = <strong>${fit.saddleFromGround}cm</strong>`, 'LeMond 공식 — 전세계 전문 피터 표준. BB에서 안장까지 수직 거리 + BB높이 27cm'],
+    ['안장 세트백', `max(2, 허벅지 × 0.1 − 0.5)`, `max(2, ${m.thigh} × 0.1 − 0.5) = <strong>${fit.setback}cm</strong>`, 'KOPS 기준 — 3시 위치 크랭크에서 무릎 앞면이 페달 축 수직 위에 오도록'],
+    ['리치', `(몸통×0.48 + 팔×0.37) × 포지션계수`, `(${m.torso}×0.48 + ${m.arm}×0.37) × ${posMult} = <strong>${fit.reach}cm</strong>`, `상체+팔 가중합 × ${posLabel[m.position]} 포지션 계수(${posMult})`],
+    ['드롭', `포지션 범위 × 유연성 가중치`, `${dropRange}cm 범위 × ${flexLabel[m.flexibility]}(${flexF}) = <strong>${fit.saddleDrop}cm</strong>`, '포지션별 허용 드롭 범위에 유연성을 가중치로 보간'],
+    ['핸들바 넓이', `어깨 ± 포지션 보정 → 표준 규격`, `${m.shoulder} ${posAdj>=0?'+':'-'}${Math.abs(posAdj)} = ${twRaw}cm → 최근접 규격 <strong>${fit.handlebarWidth}cm</strong>`, '컴포트 +2cm, 레이싱 −1cm. 표준 규격 36/38/40/42/44/46/48cm'],
+    ['크랭크암', `인심 구간별 표준 길이`, `인심 ${m.inseam}cm → <strong>${fit.crankLength}mm</strong>`, '인심 4cm 구간마다 2.5mm 증가. 짧은 크랭크암이 무릎 부담 감소'],
+    ['안장 넓이', `좌골 기준 표준 규격`, `${sitEstimated} → <strong>${fit.saddleWidth}mm</strong>`, '좌골 양 끝에서 +10~15mm 여유. 좌골 측정이 정확도 가장 높음'],
+  ];
+
+  G('basisWrap').innerHTML = `
+    <div class="info-section" id="basisCard">
+      <button class="info-toggle" onclick="this.closest('.info-section').classList.toggle('open')">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span>🔬</span>
+          <span style="font-size:0.88rem;font-weight:700;color:var(--t1);">피팅 계산 근거</span>
+          <span style="font-size:0.74rem;color:var(--t3);">— 각 수치의 산출 공식과 근거</span>
+        </div>
+        <span class="info-chevron">▾</span>
+      </button>
+      <div class="info-body">
+        <table class="basis-table">
+          <thead><tr><th>항목</th><th>계산식</th><th>계산 과정</th><th>근거</th></tr></thead>
+          <tbody>${rows.map(([n,f,c,b])=>`<tr>
+            <td><strong>${n}</strong></td>
+            <td class="basis-formula">${f}</td>
+            <td class="basis-result">${c}</td>
+            <td style="color:var(--t2);font-size:0.71rem;">${b}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderCleat(m, fit) {
+  const shoe = m.shoeSize || 265;
+  const ballPos = Math.round(shoe * 0.71);
+  const posLabel = {comfort:'컴포트',endurance:'엔듀런스',performance:'퍼포먼스',racing:'레이싱'}[m.position]||'엔듀런스';
+  const floatRec = m.position === 'racing' ? '0° (고정형)' : m.position === 'performance' ? '4.5°' : '6° ~ 9°';
+  const floatCleat = m.position === 'racing'
+    ? 'Look KEO Blade (0°), Shimano 레드(0°)'
+    : m.position === 'performance'
+    ? 'Look KEO 레드(4.5°), Shimano SPD-SL 블루(2°)'
+    : 'Shimano SPD-SL 옐로우(6°), Look KEO 블랙(9°)';
+
+  const items = [
+    {icon:'↕', title:'클릿 전후 위치', val:`발뒤꿈치에서 ${ballPos}mm`, desc:`발볼(1번 중족골두)이 페달 축 바로 위. 신발 ${shoe}mm × 0.71 ≈ ${ballPos}mm. 편안함 우선이면 3~5mm 뒤로.`},
+    {icon:'🔄', title:'Float (각도 여유)', val:floatRec, desc:`${posLabel} 포지션 권장. ${floatCleat}. 무릎 통증 있으면 Float 큰 것으로. 처음엔 9° 시작 권장.`},
+    {icon:'↔', title:'클릿 좌우 위치', val:'신발 안쪽 기준', desc:'클릿을 엄지발가락 방향으로 최대한 붙여 Q-factor 최소화. 무릎이 안쪽 쏠리면 바깥으로 이동.'},
+    {icon:'📐', title:'클릿 각도', val:'자연 보행 각도', desc:'걸을 때 자연스러운 발 각도 그대로 적용 (보통 5~15° toe-out). 강제로 돌리지 말고 자연스럽게.'},
+    {icon:'✅', title:'정렬 확인', val:'3시 위치 기준', desc:'고정 롤러에서 3분 워밍업 후 3시 위치에서 무릎이 발가락 2번 위에 위치하는지 확인. 무릎이 좌우로 흔들리면 재조정.'},
+    {icon:'🔧', title:'관리 주기', val:'3~6개월', desc:`클릿 볼트 토크 5~6Nm 유지. 마모되면 Float 감소하므로 주기적 점검. 슈즈 교체 시 반드시 재설정.`},
+  ];
+
+  G('cleatWrap').innerHTML = `
+    <div class="info-section open" id="cleatCard">
+      <button class="info-toggle" onclick="this.closest('.info-section').classList.toggle('open')">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span>👟</span>
+          <span style="font-size:0.88rem;font-weight:700;color:var(--t1);">클릿슈즈 피팅 가이드</span>
+          <span style="font-size:0.74rem;color:var(--t3);">신발 ${shoe}mm · ${posLabel} 기준</span>
+        </div>
+        <span class="info-chevron" style="transform:rotate(180deg);">▾</span>
+      </button>
+      <div class="info-body" style="display:block;">
+        <div class="cleat-grid">
+          ${items.map(it=>`<div class="cleat-item">
+            <div class="cleat-item-title"><span>${it.icon}</span>${it.title}</div>
+            <div class="cleat-item-val">${it.val}</div>
+            <div class="cleat-item-desc">${it.desc}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderSymptom() {
+  const symptoms = [
+    {icon:'🦵', name:'무릎 앞쪽(전방) 통증', cause:'안장이 낮거나 클릿이 앞에 위치',
+     adj:['안장 높이 3~5mm 올리기','클릿 3~5mm 뒤로 이동','세트백 소폭 늘리기','Float 큰 클릿으로 교체 (6° 이상)']},
+    {icon:'🦵', name:'무릎 뒤쪽(후방) 통증', cause:'안장이 높거나 세트백이 과도',
+     adj:['안장 높이 3~5mm 낮추기','안장을 앞으로 이동 (세트백 감소)','크랭크암 길이 재검토']},
+    {icon:'🦵', name:'무릎 내측 통증', cause:'클릿 각도·Q-factor 문제',
+     adj:['클릿을 toe-out 방향으로 조정','클릿을 신발 바깥쪽으로 이동 (Q-factor ↑)','Float 큰 클릿으로 교체','고관절 운동 병행']},
+    {icon:'🦵', name:'무릎 외측(IT밴드) 통증', cause:'클릿 내전 또는 Q-factor 과소',
+     adj:['클릿을 toe-in 방향으로 조정','클릿을 신발 안쪽으로 이동 (Q-factor ↓)','안장 소폭 낮추기']},
+    {icon:'🪑', name:'회음부·엉덩이 통증', cause:'안장 높이·각도·폭 부적합',
+     adj:['안장 코 1~2° 아래로 기울이기','안장 높이 3mm 낮추기','좌골 넓이 재측정 후 안장 폭 교체','라이딩 팬츠 패드 확인']},
+    {icon:'🔙', name:'허리 통증', cause:'핸들이 너무 낮거나 리치 과다',
+     adj:['스페이서 추가로 핸들 높이 올리기','스템 10~20mm 짧은 것으로 교체','코어 근력 강화 병행']},
+    {icon:'💪', name:'목·어깨·승모근 통증', cause:'핸들 너무 낮고 앞쏠림 과도',
+     adj:['핸들 높이 10~15mm 올리기','스템 길이 줄이기','라이딩 중 팔꿈치 자연스럽게 구부리기','상체 스트레칭 병행']},
+    {icon:'🖐', name:'손목·손 저림·통증', cause:'핸들에 체중이 집중됨',
+     adj:['핸들 높이 올려 상체 하중 분산','팔꿈치를 약간 구부려 충격 흡수','글러브 또는 핸들 테이핑 추가']},
+    {icon:'🦶', name:'발 앞부분 저림·통증', cause:'클릿 위치 전방, 신발 폭 좁음',
+     adj:['클릿 3~5mm 뒤로 이동','신발 발볼 부분 여유 확인','버클·BOA 조임 강도 줄이기','인솔 교체 고려']},
+    {icon:'🦶', name:'발뒤꿈치·아킬레스 통증', cause:'안장이 낮거나 발목 각도 과도',
+     adj:['안장 3~5mm 올리기','클릿 2~3mm 앞으로 이동','페달링 시 발꿈치 과하게 내리지 않도록 의식']},
+  ];
+
+  G('symptomWrap').innerHTML = `
+    <div class="info-section" id="symptomCard">
+      <button class="info-toggle" onclick="this.closest('.info-section').classList.toggle('open')">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span>💊</span>
+          <span style="font-size:0.88rem;font-weight:700;color:var(--t1);">증상별 조정 가이드</span>
+          <span style="font-size:0.74rem;color:var(--t3);">— 불편·통증 부위별 피팅 수정 방법</span>
+        </div>
+        <span class="info-chevron">▾</span>
+      </button>
+      <div class="info-body">
+        <p style="font-size:0.73rem;color:var(--t3);margin-bottom:12px;">※ 조정은 한 번에 하나씩, 3~5mm 단위로 시작하세요. 증상이 지속되면 전문 피터 또는 정형외과 상담 권장.</p>
+        <div class="symptom-list">
+          ${symptoms.map(s=>`<div class="symptom-item">
+            <div class="symptom-head">
+              <div class="symptom-name">${s.icon} ${s.name}</div>
+              <div class="symptom-cause">원인: ${s.cause}</div>
+            </div>
+            ${s.adj.map(a=>`<div class="symptom-adj-item">${a}</div>`).join('')}
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
 }
 
 /* ══ 3D VISUALIZATION (Three.js) ══ */
@@ -837,8 +1007,6 @@ function drawBike(m, fit) {
           sd.x = pt.x; sd.y = pt.y;
         } else if (adjTarget === 'bb') {
           bb.x = pt.x; bb.y = pt.y;
-          sd.x = bb.x - fit.setback;
-          bar.x = sd.x + fit.reach;
           pedalR.x = bb.x + crankCm * Math.sin(crankAngle);
           pedalR.y = bb.y - crankCm * Math.cos(crankAngle);
         } else if (adjTarget === 'handlebar') {
@@ -988,7 +1156,8 @@ function drawBike(m, fit) {
       annotCtx.save();
       annotCtx.font = 'bold 11.5px Inter,sans-serif';
       const lw2 = annotCtx.measureText(label).width + 10;
-      const lx2 = pp.x - lw2 - 8, ly2 = pp.y + 2;
+      const ly2 = annotCanvas.height - 16;
+      const lx2 = pp.x - lw2 / 2;
       annotCtx.fillStyle = 'rgba(255,255,255,0.95)';
       annotCtx.strokeStyle = C.crank; annotCtx.lineWidth = 1.5;
       if(annotCtx.roundRect){
