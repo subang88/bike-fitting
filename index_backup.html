@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>로드 바이크 피팅 계산기</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #F0F4FF;
+      --card:      #FFFFFF;
+      --card2:     #F8FAFF;
+      --bd:        #DDE3F0;
+      --bd2:       #C8D0E8;
+      --accent:    #3B6EF8;
+      --accent-lt: #EEF3FF;
+      --accent-md: #C7D7FD;
+      --green:     #0BA870;
+      --orange:    #E07B0A;
+      --red:       #D93B47;
+      --t1:        #111827;
+      --t2:        #4B5563;
+      --t3:        #9CA3AF;
+      --c1:#E53E3E;--c2:#D97706;--c3:#059669;--c4:#7C3AED;
+      --c5:#2563EB;--c6:#9333EA;--c7:#0891B2;--c8:#B45309;
+      --c9:#0D9488;--c10:#DB2777;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{font-family:'Inter',-apple-system,'Malgun Gothic',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased;}
+
+    .hero{background:linear-gradient(135deg,#3B6EF8 0%,#1E3FA8 100%);padding:28px 24px 24px;text-align:center;}
+    .hero h1{font-size:clamp(1.3rem,3vw,1.9rem);font-weight:800;color:#fff;letter-spacing:-0.5px;margin-bottom:6px;}
+    .hero p{color:rgba(255,255,255,.78);font-size:0.88rem;margin-bottom:12px;}
+    .hero-tags{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;}
+    .tag{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:3px 11px;font-size:0.72rem;font-weight:600;color:#fff;}
+
+    .main{max-width:980px;margin:0 auto;padding:20px 16px 60px;}
+
+    .guide-card{background:var(--card);border:1px solid var(--bd);border-radius:10px;margin-bottom:14px;overflow:hidden;}
+    .guide-toggle{width:100%;background:none;border:none;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:inherit;}
+    .guide-toggle-left{display:flex;align-items:center;gap:8px;}
+    .guide-toggle-title{font-size:0.85rem;font-weight:700;color:var(--t1);}
+    .guide-toggle-sub{font-size:0.75rem;color:var(--t3);margin-left:4px;}
+    .guide-chevron{color:var(--t3);font-size:0.75rem;transition:transform .2s;flex-shrink:0;}
+    .guide-card.open .guide-chevron{transform:rotate(180deg);}
+    .guide-body{display:none;padding:0 16px 14px;}
+    .guide-card.open .guide-body{display:block;}
+    .guide-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:4px;}
+    .gitem{background:var(--card2);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;}
+    .gitem-head{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+    .gitem-icon{font-size:1rem;}
+    .gitem-title{font-size:0.8rem;font-weight:700;color:var(--t1);}
+    .gitem-badge{font-size:0.62rem;font-weight:700;background:#FEF3C7;color:#92400E;border-radius:3px;padding:1px 5px;margin-left:auto;}
+    .gitem-steps{list-style:none;}
+    .gitem-steps li{font-size:0.74rem;color:var(--t2);padding:2px 0 2px 12px;position:relative;line-height:1.45;}
+    .gitem-steps li::before{content:'›';position:absolute;left:1px;color:var(--accent);font-weight:700;}
+    .gitem-warn{font-size:0.72rem;color:#92400E;background:#FEF3C7;border-radius:4px;padding:4px 7px;margin-top:6px;}
+
+    .form-card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:20px 20px 16px;margin-bottom:12px;}
+    .fgroup{margin-bottom:14px;}
+    .fgroup:last-child{margin-bottom:0;}
+    .fgroup-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--accent);display:flex;align-items:center;gap:6px;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--bd);}
+    .fgroup-label .num{width:18px;height:18px;border-radius:5px;background:var(--accent-lt);border:1px solid var(--accent-md);display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:var(--accent);font-weight:800;}
+    .fgroup-note{font-size:0.68rem;font-weight:400;color:var(--t3);text-transform:none;letter-spacing:0;margin-left:2px;}
+
+    .fg3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+    .fg2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+    @media(max-width:600px){.fg3,.fg2{grid-template-columns:1fr 1fr;}}
+    @media(max-width:400px){.fg3{grid-template-columns:1fr;}.fg2{grid-template-columns:1fr;}}
+
+    .cbox{display:flex;align-items:stretch;background:var(--card2);border:1px solid var(--bd);border-radius:8px;overflow:hidden;transition:border-color .15s,box-shadow .15s;height:38px;}
+    .cbox:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,110,248,.12);}
+    .cbox-label{flex-shrink:0;padding:0 10px;display:flex;align-items:center;background:#F1F5FD;border-right:1px solid var(--bd);font-size:0.76rem;font-weight:600;color:var(--t2);white-space:nowrap;}
+    .cbox select{flex:1;min-width:0;background:transparent;border:none;padding:0 28px 0 8px;color:var(--t1);font-size:0.85rem;font-weight:600;font-family:inherit;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239CA3AF' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+    .cbox select option{background:#fff;color:#111;}
+    .cbox-unit{flex-shrink:0;padding:0 9px;display:flex;align-items:center;border-left:1px solid var(--bd);background:#EEF3FF;font-size:0.73rem;font-weight:700;color:var(--accent);white-space:nowrap;}
+    .opt-tag{font-size:0.6rem;background:#E0E7FF;color:#4B5EAA;border-radius:3px;padding:1px 4px;margin-left:2px;}
+
+    .ssel{background:var(--card2);border:1px solid var(--bd);border-radius:8px;overflow:hidden;transition:border-color .15s,box-shadow .15s;}
+    .ssel:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,110,248,.12);}
+    .ssel-label{font-size:0.72rem;font-weight:600;color:var(--t2);padding:7px 10px 0;display:block;}
+    .ssel select{width:100%;background:transparent;border:none;padding:3px 30px 7px 10px;color:var(--t1);font-size:0.82rem;font-weight:600;font-family:inherit;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239CA3AF' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+    .ssel select option{background:#fff;color:#111;}
+
+    .calc-btn{width:100%;padding:14px;margin-top:4px;background:linear-gradient(135deg,#3B6EF8,#1E3FA8);border:none;border-radius:10px;color:#fff;font-family:inherit;font-size:0.97rem;font-weight:700;cursor:pointer;letter-spacing:.2px;transition:opacity .15s,transform .1s,box-shadow .15s;box-shadow:0 4px 16px rgba(59,110,248,.3);display:flex;align-items:center;justify-content:center;gap:7px;}
+    .calc-btn:hover{opacity:.93;box-shadow:0 6px 24px rgba(59,110,248,.4);}
+    .calc-btn:active{transform:scale(.997);}
+
+    .err-msg{background:#FEF2F2;border:1px solid #FECACA;border-radius:7px;padding:10px 14px;color:var(--red);font-size:0.82rem;margin-bottom:12px;display:none;}
+
+    #results{display:none;}
+    #results.show{display:block;}
+    .res-header{text-align:center;margin:24px 0 16px;}
+    .res-header h2{font-size:1.3rem;font-weight:800;color:var(--t1);margin-bottom:4px;}
+    .res-header p{color:var(--t2);font-size:0.84rem;}
+
+    .res-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:16px;}
+    .rcard{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px 14px 12px;position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s;}
+    .rcard::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--cc);border-radius:10px 10px 0 0;}
+    .rcard:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08);}
+    .rcard-num{position:absolute;top:11px;right:11px;width:21px;height:21px;border-radius:6px;background:color-mix(in srgb, var(--cc) 15%, transparent);border:1px solid color-mix(in srgb, var(--cc) 30%, transparent);display:flex;align-items:center;justify-content:center;font-size:0.66rem;font-weight:800;color:var(--cc);}
+    .rcard-label{font-size:0.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--t3);margin-bottom:2px;}
+    .rcard-name{font-size:0.82rem;font-weight:600;color:var(--t1);margin-bottom:8px;}
+    .rcard-val{display:flex;align-items:baseline;gap:4px;margin-bottom:3px;}
+    .rcard-val .n{font-size:1.9rem;font-weight:800;color:var(--cc);line-height:1;}
+    .rcard-val .u{font-size:0.8rem;font-weight:600;color:var(--t3);}
+    .rcard-range{font-size:0.7rem;color:var(--t3);}
+    .rcard-desc{font-size:0.72rem;color:var(--t2);margin-top:7px;padding-top:7px;border-top:1px solid var(--bd);line-height:1.5;}
+
+    .fitcheck{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:16px 18px;margin-bottom:14px;}
+    .fitcheck h3{font-size:0.88rem;font-weight:700;color:var(--t1);margin-bottom:10px;}
+    .fitrows{display:flex;flex-direction:column;gap:7px;}
+    .fitrow{display:flex;align-items:flex-start;gap:8px;font-size:0.8rem;}
+    .fdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+    .fdot.g{background:var(--green);}
+    .fdot.w{background:var(--orange);}
+    .fdot.b{background:var(--red);}
+    .ftext{color:var(--t2);line-height:1.5;}
+    .ftext strong{color:var(--t1);}
+
+    .info-section{background:var(--card);border:1px solid var(--bd);border-radius:10px;margin-bottom:14px;overflow:hidden;}
+    .info-toggle{width:100%;background:none;border:none;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:inherit;text-align:left;}
+    .info-chevron{color:var(--t3);font-size:0.75rem;transition:transform .2s;flex-shrink:0;}
+    .info-section.open .info-chevron{transform:rotate(180deg);}
+    .info-body{display:none;padding:0 16px 16px;}
+    .info-section.open .info-body{display:block;}
+
+    .basis-table{width:100%;border-collapse:collapse;font-size:0.77rem;margin-top:4px;}
+    .basis-table th{text-align:left;padding:7px 10px;background:var(--card2);border-bottom:2px solid var(--bd);font-size:0.7rem;color:var(--t2);font-weight:600;}
+    .basis-table td{padding:7px 10px;border-bottom:1px solid var(--bd);vertical-align:top;line-height:1.55;}
+    .basis-table tr:last-child td{border-bottom:none;}
+    .basis-formula{color:var(--accent);font-family:monospace;font-size:0.74rem;}
+    .basis-result{font-weight:700;color:var(--t1);font-size:0.74rem;}
+    @media(max-width:640px){.basis-table thead{display:none;}.basis-table td{display:block;padding:4px 10px;}.basis-table tr{border-bottom:1px solid var(--bd);display:block;padding:8px 0;}}
+
+    .cleat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-top:6px;}
+    .cleat-item{background:var(--card2);border:1px solid var(--bd);border-radius:8px;padding:12px 14px;}
+    .cleat-item-title{font-size:0.8rem;font-weight:700;color:var(--t1);margin-bottom:5px;display:flex;align-items:center;gap:6px;}
+    .cleat-item-val{font-size:1.05rem;font-weight:800;color:var(--accent);margin-bottom:5px;}
+    .cleat-item-desc{font-size:0.72rem;color:var(--t2);line-height:1.55;}
+
+    .symptom-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-top:6px;}
+    .symptom-item{background:var(--card2);border:1px solid var(--bd);border-radius:8px;padding:11px 14px;}
+    .symptom-head{margin-bottom:7px;}
+    .symptom-name{font-size:0.82rem;font-weight:700;color:var(--t1);}
+    .symptom-cause{font-size:0.7rem;color:var(--t3);margin-top:1px;}
+    .symptom-adj-item{font-size:0.74rem;color:var(--t2);padding:2px 0 2px 14px;position:relative;line-height:1.45;}
+    .symptom-adj-item::before{content:'→';position:absolute;left:0;color:var(--accent);font-weight:700;font-size:0.7rem;}
+
+    .viz-wrap{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:18px 16px 14px;margin-bottom:16px;}
+    .viz-title{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--t3);text-align:center;margin-bottom:14px;}
+    #svgWrap{overflow-x:auto;}
+    #svgWrap svg{display:block;margin:0 auto;max-width:100%;}
+    .viz-legend{display:flex;flex-wrap:wrap;gap:5px 12px;margin-top:12px;justify-content:center;}
+    .vleg{display:flex;align-items:center;gap:4px;font-size:0.7rem;color:var(--t2);}
+    .vdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+
+    .sep{display:flex;align-items:center;gap:10px;margin:20px 0 14px;}
+    .sep-line{flex:1;height:1px;background:var(--bd);}
+    .sep-text{font-size:0.74rem;font-weight:700;color:var(--t3);white-space:nowrap;}
+
+    @media(max-width:640px){
+      .hero{padding:22px 16px 18px;}
+      .main{padding:14px 12px 48px;}
+      .form-card{padding:16px 14px 12px;}
+      .res-grid{grid-template-columns:1fr 1fr;}
+    }
+    @media(max-width:400px){.res-grid{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>🚴 로드 바이크 피팅 계산기</h1>
+  <p>신체 측정값 입력 → 전문 피터 기준 최적 피팅 수치 산출</p>
+  <div class="hero-tags">
+    <span class="tag">LeMond 공식</span>
+    <span class="tag">KOPS 기준</span>
+    <span class="tag">10가지 수치</span>
+    <span class="tag">SVG 시각화</span>
+  </div>
+</header>
+
+<div class="main">
+
+  <div class="guide-card" id="guideCard">
+    <button class="guide-toggle" onclick="document.getElementById('guideCard').classList.toggle('open')">
+      <div class="guide-toggle-left">
+        <span>📏</span>
+        <span class="guide-toggle-title">정확한 측정 방법 가이드</span>
+        <span class="guide-toggle-sub">— 클릭해서 펼치기</span>
+      </div>
+      <span class="guide-chevron">▾</span>
+    </button>
+    <div class="guide-body">
+      <div class="guide-grid">
+        <div class="gitem">
+          <div class="gitem-head"><span class="gitem-icon">📌</span><span class="gitem-title">인심 (Inseam)</span><span class="gitem-badge">가장 중요</span></div>
+          <ul class="gitem-steps">
+            <li>맨발로 단단한 벽에 등을 기댑니다</li>
+            <li>두꺼운 책을 사타구니에 수평으로 끼웁니다</li>
+            <li>바닥에서 책 윗면까지 수직으로 측정</li>
+            <li>2~3회 측정 후 평균값을 사용합니다</li>
+          </ul>
+          <div class="gitem-warn">⚠ 신발 착용·두꺼운 옷 시 오차 발생</div>
+        </div>
+        <div class="gitem">
+          <div class="gitem-head"><span class="gitem-icon">🦴</span><span class="gitem-title">허벅지 (대퇴골)</span></div>
+          <ul class="gitem-steps">
+            <li>서 있는 상태에서 측정</li>
+            <li>엉덩이 옆 대전자(가장 돌출된 뼈)를 찾습니다</li>
+            <li>대전자 중심 → 무릎 관절 중심까지</li>
+          </ul>
+          <div class="gitem-warn">⚠ 무릎은 관절 중심 (옆에서 봤을 때 중간)</div>
+        </div>
+        <div class="gitem">
+          <div class="gitem-head"><span class="gitem-icon">🦵</span><span class="gitem-title">정강이 (경골)</span></div>
+          <ul class="gitem-steps">
+            <li>무릎 관절 중심에서 측정 시작</li>
+            <li>발목 바깥쪽 복숭아뼈(외과) 중심까지</li>
+            <li>다리를 똑바로 편 상태로 측정</li>
+          </ul>
+        </div>
+        <div class="gitem">
+          <div class="gitem-head"><span class="gitem-icon">🏋️</span><span class="gitem-title">몸통 길이</span></div>
+          <ul class="gitem-steps">
+            <li>목을 앞으로 숙여 C7 경추(가장 크게 튀어나온 뼈)를 찾습니다</li>
+            <li>C7 → 좌골(앉을 때 닿는 뼈)까지 수직으로 측정</li>
+          </ul>
+          <div class="gitem-warn">⚠ 바른 자세로 서서 측정 (구부정하면 오차)</div>
+        </div>
+        <div class="gitem">
+          <div class="gitem-head"><span class="gitem-icon">💪</span><span class="gitem-title">팔 길이</span></div>
+          <ul class="gitem-steps">
+            <li>어깨 끝 견봉 돌출부를 찾습니다</li>
+            <li>견봉 → 손목 관절 돌출부까지 측정</li>
+            <li>팔꿈치를 약간 구부린 자연스러운 상태</li>
+          </ul>
+        </div>
+        <div class="gitem">
+          <div class="gitem-head"><span class="gitem-icon">↔️</span><span class="gitem-title">어깨 넓이</span></div>
+          <ul class="gitem-steps">
+            <li>양쪽 어깨 끝 견봉을 찾습니다</li>
+            <li>왼쪽 견봉 끝 → 오른쪽 견봉 끝</li>
+            <li>가장 넓은 지점을 수평으로 측정</li>
+          </ul>
+          <div class="gitem-warn">⚠ 핸들바 넓이의 기준이 됩니다</div>
+        </div>
+        <div class="gitem">
+          <div class="gitem-head"><span class="gitem-icon">🪑</span><span class="gitem-title">좌골 넓이 (선택)</span></div>
+          <ul class="gitem-steps">
+            <li>두꺼운 종이 위에 앉아 생긴 압흔 사이 거리</li>
+            <li>전문 샵에서 측정하면 가장 정확합니다</li>
+          </ul>
+          <div class="gitem-warn">⚠ 미입력 시 어깨 비율로 추정합니다</div>
+        </div>
+        <div class="gitem">
+          <div class="gitem-head"><span class="gitem-icon">👟</span><span class="gitem-title">신발 사이즈</span></div>
+          <ul class="gitem-steps">
+            <li>자전거용 클릿 슈즈 사이즈 (mm 단위)</li>
+            <li>EU 사이즈 예: EU42 ≈ 265mm</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="err-msg" id="errMsg"></div>
+
+  <div class="form-card">
+    <!-- ① 기본 신체 -->
+    <div class="fgroup">
+      <div class="fgroup-label"><div class="num">1</div>기본 신체 정보</div>
+      <div class="fg3">
+        <div class="cbox"><span class="cbox-label">키</span><select id="height"><option value="">선택</option></select><span class="cbox-unit">cm</span></div>
+        <div class="cbox"><span class="cbox-label">체중</span><select id="weight"><option value="">선택</option></select><span class="cbox-unit">kg</span></div>
+        <div class="cbox"><span class="cbox-label">나이</span><select id="age"><option value="">선택</option></select><span class="cbox-unit">세</span></div>
+      </div>
+    </div>
+    <!-- ② 다리 -->
+    <div class="fgroup">
+      <div class="fgroup-label"><div class="num">2</div>다리 측정값<span class="fgroup-note">안장 높이에 직접 영향</span></div>
+      <div class="fg3">
+        <div class="cbox"><span class="cbox-label">인심</span><select id="inseam"><option value="">선택</option></select><span class="cbox-unit">cm</span></div>
+        <div class="cbox"><span class="cbox-label">허벅지</span><select id="thigh"><option value="">선택</option></select><span class="cbox-unit">cm</span></div>
+        <div class="cbox"><span class="cbox-label">정강이</span><select id="shin"><option value="">선택</option></select><span class="cbox-unit">cm</span></div>
+      </div>
+    </div>
+    <!-- ③ 상체 -->
+    <div class="fgroup">
+      <div class="fgroup-label"><div class="num">3</div>상체 측정값<span class="fgroup-note">핸들 높이·넓이·리치에 영향</span></div>
+      <div class="fg3">
+        <div class="cbox"><span class="cbox-label">몸통</span><select id="torso"><option value="">선택</option></select><span class="cbox-unit">cm</span></div>
+        <div class="cbox"><span class="cbox-label">팔</span><select id="arm"><option value="">선택</option></select><span class="cbox-unit">cm</span></div>
+        <div class="cbox"><span class="cbox-label">어깨</span><select id="shoulder"><option value="">선택</option></select><span class="cbox-unit">cm</span></div>
+      </div>
+    </div>
+    <!-- ④ 좌골·신발 -->
+    <div class="fgroup">
+      <div class="fgroup-label"><div class="num">4</div>좌골 &amp; 신발</div>
+      <div class="fg2">
+        <div class="cbox"><span class="cbox-label">좌골 <span class="opt-tag">선택</span></span><select id="sitBone"><option value="">선택 안 함</option></select><span class="cbox-unit">mm</span></div>
+        <div class="cbox"><span class="cbox-label">신발</span><select id="shoeSize"><option value="">선택</option></select><span class="cbox-unit">mm</span></div>
+      </div>
+    </div>
+    <!-- ⑤ 라이딩 성향 -->
+    <div class="fgroup">
+      <div class="fgroup-label"><div class="num">5</div>라이딩 성향</div>
+      <div class="fg3">
+        <div class="ssel">
+          <label class="ssel-label">유연성</label>
+          <select id="flexibility">
+            <option value="">— 선택 —</option>
+            <option value="very_flexible">매우 유연 — 손바닥이 바닥에 닿음</option>
+            <option value="flexible">유연 — 손가락이 발끝에 닿음</option>
+            <option value="average" selected>보통 — 손가락이 발목 정도</option>
+            <option value="stiff">뻣뻣함 — 무릎 아래로 힘듦</option>
+          </select>
+        </div>
+        <div class="ssel">
+          <label class="ssel-label">라이딩 목적</label>
+          <select id="position">
+            <option value="">— 선택 —</option>
+            <option value="comfort">컴포트 — 편안한 업라이트</option>
+            <option value="endurance" selected>엔듀런스 — 장거리 투어링</option>
+            <option value="performance">퍼포먼스 — 빠른 주행</option>
+            <option value="racing">레이싱 — 최대 공기저항 감소</option>
+          </select>
+        </div>
+        <div class="ssel">
+          <label class="ssel-label">경험 수준</label>
+          <select id="experience">
+            <option value="">— 선택 —</option>
+            <option value="beginner">입문 — 1년 미만</option>
+            <option value="intermediate" selected>중급 — 1~3년</option>
+            <option value="advanced">상급 — 3년 이상</option>
+            <option value="racer">전문 선수</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <button class="calc-btn" onclick="calculate()">⚡ 피팅 수치 계산하기</button>
+  </div>
+
+  <div id="results">
+    <div class="sep"><div class="sep-line"></div><div class="sep-text">피팅 결과</div><div class="sep-line"></div></div>
+    <div class="res-header"><h2>🔧 피팅 수치</h2><p id="resSub"></p></div>
+    <div class="res-grid" id="resGrid"></div>
+    <div class="fitcheck"><h3>✅ 피팅 적합도 분석</h3><div class="fitrows" id="fitRows"></div></div>
+    <div id="basisWrap"></div>
+    <div class="viz-wrap">
+      <div class="viz-title">📐 자전거 피팅 시각화 (측면도)</div>
+      <div id="svgWrap"></div>
+      <div class="viz-legend" id="vizLeg"></div>
+    </div>
+    <div id="cleatWrap"></div>
+    <div id="symptomWrap"></div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
+<script>
+const OPT = {
+  height:   [150,210,1],
+  weight:   [40, 130,1],
+  age:      [10, 90, 1],
+  inseam:   [60, 105,1],
+  thigh:    [32, 65, 1],
+  shin:     [26, 58, 1],
+  torso:    [38, 78, 1],
+  arm:      [45, 80, 1],
+  shoulder: [28, 62, 1],
+  sitBone:  [80, 185,5],
+  shoeSize: [220,315,5],
+};
+const DEFAULTS = {
+  height: 176, weight: 85, age: 52,
+  inseam: 78, thigh: 49, shin: 35,
+  torso: 63, arm: 76, shoulder: 44,
+  sitBone: 140, shoeSize: 265,
+};
+function initSelects() {
+  Object.entries(OPT).forEach(([id,[mn,mx,st]]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const first = id==='sitBone' ? '<option value="">선택 안 함</option>' : '<option value="">선택</option>';
+    let html = first;
+    const def = DEFAULTS[id];
+    for (let v=mn; v<=mx; v=Math.round((v+st)*10)/10)
+      html += `<option value="${v}"${def!==undefined && v===def ? ' selected' : ''}>${v}</option>`;
+    el.innerHTML = html;
+  });
+}
+initSelects();
+
+const G = id => document.getElementById(id);
+const V = id => parseFloat(G(id).value)||0;
+const S = id => G(id).value;
+
+function calculate() {
+  const err = G('errMsg');
+  err.style.display = 'none';
+  const need = [['height','키'],['inseam','인심'],['torso','몸통'],['arm','팔'],['shoulder','어깨'],['thigh','허벅지'],['shin','정강이']];
+  const miss = need.filter(([id])=>!V(id)).map(([,n])=>n);
+  if (miss.length) {
+    err.textContent = `⚠ 필수 항목을 선택해주세요: ${miss.join(', ')}`;
+    err.style.display = 'block';
+    err.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+  if (!S('flexibility')||!S('position')||!S('experience')) {
+    err.textContent = '⚠ 라이딩 성향을 모두 선택해주세요.';
+    err.style.display = 'block';
+    return;
+  }
+  const m = {
+    height:V('height'),weight:V('weight')||70,age:V('age')||35,
+    inseam:V('inseam'),thigh:V('thigh'),shin:V('shin'),
+    torso:V('torso'),arm:V('arm'),shoulder:V('shoulder'),
+    sitBone:V('sitBone'),shoeSize:V('shoeSize')||265,
+    flexibility:S('flexibility'),position:S('position'),experience:S('experience'),
+  };
+  const fit = compute(m);
+  renderCards(m, fit);
+  renderFitCheck(m, fit);
+  renderBasis(m, fit);
+  renderCleat(m, fit);
+  renderSymptom();
+  drawBike(m, fit);
+  G('results').classList.add('show');
+  setTimeout(()=>G('results').scrollIntoView({behavior:'smooth',block:'start'}), 80);
+}
+
+function compute(m) {
+  const BB = 27;
+  const saddleFromBB     = parseFloat((m.inseam*0.885+0.3).toFixed(1));
+  const saddleFromGround = parseFloat((saddleFromBB+BB).toFixed(1));
+  const setback          = parseFloat((Math.max(2, m.thigh*0.1-0.5)).toFixed(1));
+  let crankLength;
+  if      (m.inseam<74)  crankLength=165;
+  else if (m.inseam<78)  crankLength=167.5;
+  else if (m.inseam<82)  crankLength=170;
+  else if (m.inseam<86)  crankLength=172.5;
+  else if (m.inseam<90)  crankLength=175;
+  else if (m.inseam<94)  crankLength=177.5;
+  else                   crankLength=180;
+  const stds=[36,38,40,42,44,46,48];
+  let tw=m.shoulder+(m.position==='comfort'?2:m.position==='racing'?-1:0);
+  const handlebarWidth=stds.reduce((p,c)=>Math.abs(c-tw)<Math.abs(p-tw)?c:p);
+  const flexMap={very_flexible:0,flexible:0.25,average:0.55,stiff:0.85};
+  const dropRng={comfort:[0,2],endurance:[3,6],performance:[6,10],racing:[9,14]};
+  const flexF=flexMap[m.flexibility]??0.55;
+  const [dMin,dMax]=dropRng[m.position]||[4,8];
+  const saddleDrop=parseFloat((dMin+(dMax-dMin)*flexF).toFixed(1));
+  const handlebarHeight=parseFloat((saddleFromGround-saddleDrop).toFixed(1));
+  const posMult={comfort:0.82,endurance:0.90,performance:0.97,racing:1.04};
+  const reach=parseFloat(((m.torso*0.48+m.arm*0.37)*(posMult[m.position]||0.92)).toFixed(1));
+  const hsDist=parseFloat(Math.sqrt(reach*reach+saddleDrop*saddleDrop).toFixed(1));
+  const hsAngle=parseFloat((Math.atan2(saddleDrop,reach)*180/Math.PI).toFixed(1));
+  const csAngle=parseFloat((Math.atan2(setback,saddleFromBB)*180/Math.PI).toFixed(1));
+  let saddleWidth;
+  if (m.sitBone>0) {
+    if(m.sitBone<=95) saddleWidth=130;
+    else if(m.sitBone<=110) saddleWidth=138;
+    else if(m.sitBone<=125) saddleWidth=143;
+    else if(m.sitBone<=140) saddleWidth=155;
+    else saddleWidth=168;
+  } else {
+    const est=m.shoulder*10*0.27+15;
+    if(est<=95) saddleWidth=130;
+    else if(est<=110) saddleWidth=138;
+    else if(est<=125) saddleWidth=143;
+    else if(est<=140) saddleWidth=155;
+    else saddleWidth=168;
+  }
+  return {saddleFromBB,saddleFromGround,setback,saddleDrop,crankLength,handlebarWidth,handlebarHeight,reach,hsDist,hsAngle,csAngle,csDistance:saddleFromBB,saddleAngle:0,saddleWidth,BB};
+}
+
+const CARDS = [
+  {n:1,c:'--c3',l:'① 안장 높이',      name:'안장의 높이',             key:'saddleFromGround',unit:'cm',
+    range:f=>`권장 ${(f.saddleFromGround-.5).toFixed(1)}~${(f.saddleFromGround+.5).toFixed(1)} cm`,
+    desc:f=>`BB에서 수직 ${f.saddleFromBB}cm · 지면 기준`},
+  {n:2,c:'--c4',l:'② 안장 넓이',      name:'안장의 넓이',             key:'saddleWidth',     unit:'mm',
+    range:()=>'좌골 측정값 기준 표준 규격',
+    desc:f=>f.saddleWidth<=138?'슬림 레이싱형':f.saddleWidth<=155?'올라운드형':'컴포트 와이드형'},
+  {n:3,c:'--c1',l:'③ 핸들 높이',      name:'핸들의 높이',             key:'handlebarHeight', unit:'cm',
+    range:f=>`안장 대비 ${f.saddleDrop}cm 낮음`,
+    desc:f=>`드롭 ${f.saddleDrop}cm · 지면 기준`},
+  {n:4,c:'--c2',l:'④ 핸들 넓이',      name:'핸들의 넓이',             key:'handlebarWidth',  unit:'cm',
+    range:()=>'표준 36/38/40/42/44/46/48cm',
+    desc:f=>`어깨 ${f.handlebarWidth}cm 기준 최근접 규격`},
+  {n:5,c:'--c5',l:'⑤ 핸들-안장 간격', name:'핸들·안장 직선거리',      key:'hsDist',          unit:'cm',
+    range:f=>`수평 리치 ${f.reach}cm`,
+    desc:f=>`√(${f.reach}² + ${f.saddleDrop}²)`},
+  {n:6,c:'--c6',l:'⑥ 핸들-안장 각도', name:'핸들·안장 연결 각도',     key:'hsAngle',         unit:'°',
+    range:()=>'컴포트 2-8° / 엔듀런스 5-12° / 레이싱 10-20°',
+    desc:f=>`수평에서 ${f.hsAngle}° 아래`},
+  {n:7,c:'--c7',l:'⑦ 크랭크-안장 각도',name:'크랭크·안장 연결 각도',  key:'csAngle',         unit:'°',
+    range:()=>'일반 2~5°',
+    desc:f=>`수직에서 ${f.csAngle}° 후방 · 세트백 ${f.setback}cm`},
+  {n:8,c:'--c8',l:'⑧ 크랭크-안장 거리',name:'크랭크·안장 중심 거리',  key:'csDistance',      unit:'cm',
+    range:()=>'인심의 약 88~89%',
+    desc:()=>'BB 축 → 안장 중심 수직 거리'},
+  {n:9,c:'--c9',l:'⑨ 안장 각도',      name:'안장의 기울기 각도',      key:'saddleAngle',     unit:'°',
+    range:()=>'권장 -1° ~ +3°',
+    desc:()=>'0° 수평 권장. 전방 통증 시 코 1~2° 올림'},
+  {n:10,c:'--c10',l:'⑩ 크랭크암 길이', name:'크랭크암의 길이',         key:'crankLength',     unit:'mm',
+    range:()=>'표준 165/167.5/170/172.5/175/177.5/180mm',
+    desc:f=>`인심 기준 표준 크랭크암 길이`},
+];
+
+function renderCards(m, fit) {
+  G('resSub').textContent=`키 ${m.height}cm · 인심 ${m.inseam}cm · ${{comfort:'컴포트',endurance:'엔듀런스',performance:'퍼포먼스',racing:'레이싱'}[m.position]} 포지션`;
+  G('resGrid').innerHTML=CARDS.map(c=>{
+    const val=fit[c.key], col=`var(${c.c})`;
+    return `<div class="rcard" style="--cc:${col}">
+      <div class="rcard-num">${c.n}</div>
+      <div class="rcard-label">${c.l}</div>
+      <div class="rcard-name">${c.name}</div>
+      <div class="rcard-val"><span class="n">${val}</span><span class="u">${c.unit}</span></div>
+      <div class="rcard-range">${c.range(fit)}</div>
+      <div class="rcard-desc">${c.desc(fit)}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderFitCheck(m, fit) {
+  const checks=[
+    {ok:Math.abs(fit.saddleFromBB-m.inseam*0.885)<1.5,warn:Math.abs(fit.saddleFromBB-m.inseam*0.885)<3,
+      label:'안장 높이',msg:ok=>ok?`안장 높이 ${fit.saddleFromGround}cm — 인심 대비 적정 범위 (LeMond 공식)`:`안장 높이 재확인 권장 — 인심 측정값을 다시 확인해보세요`},
+    {ok:fit.saddleDrop>=2&&fit.saddleDrop<=12,warn:fit.saddleDrop<15,
+      label:'드롭',msg:ok=>ok?`드롭 ${fit.saddleDrop}cm — 포지션 및 유연성에 맞는 적절한 드롭`:`드롭 ${fit.saddleDrop}cm — 유연성 향상 후 점진적으로 낮추기 권장`},
+    {ok:true,warn:false,label:'크랭크암',msg:()=>`${fit.crankLength}mm — 인심 ${m.inseam}cm 기준 표준 크랭크암 길이`},
+    {ok:Math.abs(fit.handlebarWidth-m.shoulder)<=2,warn:Math.abs(fit.handlebarWidth-m.shoulder)<=4,
+      label:'핸들바 넓이',msg:ok=>ok?`${fit.handlebarWidth}cm — 어깨 넓이(${m.shoulder}cm)에 최적 매칭`:`${fit.handlebarWidth}cm — 어깨 넓이 대비 차이 있음. 실제 착용 후 조정 권장`},
+    {ok:fit.setback>=2&&fit.setback<=8,warn:fit.setback<=10,
+      label:'안장 세트백',msg:ok=>`세트백 ${fit.setback}cm — ${ok?'KOPS 기준 정상 범위':'전문 피터와 정밀 조정 권장'}`},
+  ];
+  G('fitRows').innerHTML=checks.map(c=>{
+    const cls=c.ok?'g':c.warn?'w':'b';
+    return `<div class="fitrow"><div class="fdot ${cls}"></div><div class="ftext"><strong>${c.label}</strong> — ${c.msg(c.ok)}</div></div>`;
+  }).join('');
+}
+
+function renderBasis(m, fit) {
+  const posLabel = {comfort:'컴포트',endurance:'엔듀런스',performance:'퍼포먼스',racing:'레이싱'};
+  const flexLabel = {very_flexible:'매우 유연',flexible:'유연',average:'보통',stiff:'뻣뻣함'};
+  const flexF = {very_flexible:0,flexible:0.25,average:0.55,stiff:0.85}[m.flexibility]??0.55;
+  const dropRange = {comfort:'0~2',endurance:'3~6',performance:'6~10',racing:'9~14'}[m.position]||'4~8';
+  const posMult = {comfort:0.82,endurance:0.90,performance:0.97,racing:1.04}[m.position]||0.92;
+  const posAdj = {comfort:2,endurance:0,performance:0,racing:-1}[m.position]||0;
+  const twRaw = m.shoulder + posAdj;
+  const sitEstimated = m.sitBone > 0 ? `좌골 ${m.sitBone}mm` : `어깨 비율 추정 ≈${Math.round(m.shoulder*10*0.27+15)}mm`;
+
+  const rows = [
+    ['안장 높이', `인심 × 0.885 + 27`, `${m.inseam} × 0.885 + 27 = <strong>${fit.saddleFromGround}cm</strong>`, 'LeMond 공식 — 전세계 전문 피터 표준. BB에서 안장까지 수직 거리 + BB높이 27cm'],
+    ['안장 세트백', `max(2, 허벅지 × 0.1 − 0.5)`, `max(2, ${m.thigh} × 0.1 − 0.5) = <strong>${fit.setback}cm</strong>`, 'KOPS 기준 — 3시 위치 크랭크에서 무릎 앞면이 페달 축 수직 위에 오도록'],
+    ['리치', `(몸통×0.48 + 팔×0.37) × 포지션계수`, `(${m.torso}×0.48 + ${m.arm}×0.37) × ${posMult} = <strong>${fit.reach}cm</strong>`, `상체+팔 가중합 × ${posLabel[m.position]} 포지션 계수(${posMult})`],
+    ['드롭', `포지션 범위 × 유연성 가중치`, `${dropRange}cm 범위 × ${flexLabel[m.flexibility]}(${flexF}) = <strong>${fit.saddleDrop}cm</strong>`, '포지션별 허용 드롭 범위에 유연성을 가중치로 보간'],
+    ['핸들바 넓이', `어깨 ± 포지션 보정 → 표준 규격`, `${m.shoulder} ${posAdj>=0?'+':'-'}${Math.abs(posAdj)} = ${twRaw}cm → 최근접 규격 <strong>${fit.handlebarWidth}cm</strong>`, '컴포트 +2cm, 레이싱 −1cm. 표준 규격 36/38/40/42/44/46/48cm'],
+    ['크랭크암', `인심 구간별 표준 길이`, `인심 ${m.inseam}cm → <strong>${fit.crankLength}mm</strong>`, '인심 4cm 구간마다 2.5mm 증가. 짧은 크랭크암이 무릎 부담 감소'],
+    ['안장 넓이', `좌골 기준 표준 규격`, `${sitEstimated} → <strong>${fit.saddleWidth}mm</strong>`, '좌골 양 끝에서 +10~15mm 여유. 좌골 측정이 정확도 가장 높음'],
+  ];
+
+  G('basisWrap').innerHTML = `
+    <div class="info-section" id="basisCard">
+      <button class="info-toggle" onclick="this.closest('.info-section').classList.toggle('open')">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span>🔬</span>
+          <span style="font-size:0.88rem;font-weight:700;color:var(--t1);">피팅 계산 근거</span>
+          <span style="font-size:0.74rem;color:var(--t3);">— 각 수치의 산출 공식과 근거</span>
+        </div>
+        <span class="info-chevron">▾</span>
+      </button>
+      <div class="info-body">
+        <table class="basis-table">
+          <thead><tr><th>항목</th><th>계산식</th><th>계산 과정</th><th>근거</th></tr></thead>
+          <tbody>${rows.map(([n,f,c,b])=>`<tr>
+            <td><strong>${n}</strong></td>
+            <td class="basis-formula">${f}</td>
+            <td class="basis-result">${c}</td>
+            <td style="color:var(--t2);font-size:0.71rem;">${b}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderCleat(m, fit) {
+  const shoe = m.shoeSize || 265;
+  const ballPos = Math.round(shoe * 0.71);
+  const posLabel = {comfort:'컴포트',endurance:'엔듀런스',performance:'퍼포먼스',racing:'레이싱'}[m.position]||'엔듀런스';
+  const floatRec = m.position === 'racing' ? '0° (고정형)' : m.position === 'performance' ? '4.5°' : '6° ~ 9°';
+  const floatCleat = m.position === 'racing'
+    ? 'Look KEO Blade (0°), Shimano 레드(0°)'
+    : m.position === 'performance'
+    ? 'Look KEO 레드(4.5°), Shimano SPD-SL 블루(2°)'
+    : 'Shimano SPD-SL 옐로우(6°), Look KEO 블랙(9°)';
+
+  const items = [
+    {icon:'↕', title:'클릿 전후 위치', val:`발뒤꿈치에서 ${ballPos}mm`, desc:`발볼(1번 중족골두)이 페달 축 바로 위. 신발 ${shoe}mm × 0.71 ≈ ${ballPos}mm. 편안함 우선이면 3~5mm 뒤로.`},
+    {icon:'🔄', title:'Float (각도 여유)', val:floatRec, desc:`${posLabel} 포지션 권장. ${floatCleat}. 무릎 통증 있으면 Float 큰 것으로. 처음엔 9° 시작 권장.`},
+    {icon:'↔', title:'클릿 좌우 위치', val:'신발 안쪽 기준', desc:'클릿을 엄지발가락 방향으로 최대한 붙여 Q-factor 최소화. 무릎이 안쪽 쏠리면 바깥으로 이동.'},
+    {icon:'📐', title:'클릿 각도', val:'자연 보행 각도', desc:'걸을 때 자연스러운 발 각도 그대로 적용 (보통 5~15° toe-out). 강제로 돌리지 말고 자연스럽게.'},
+    {icon:'✅', title:'정렬 확인', val:'3시 위치 기준', desc:'고정 롤러에서 3분 워밍업 후 3시 위치에서 무릎이 발가락 2번 위에 위치하는지 확인. 무릎이 좌우로 흔들리면 재조정.'},
+    {icon:'🔧', title:'관리 주기', val:'3~6개월', desc:`클릿 볼트 토크 5~6Nm 유지. 마모되면 Float 감소하므로 주기적 점검. 슈즈 교체 시 반드시 재설정.`},
+  ];
+
+  G('cleatWrap').innerHTML = `
+    <div class="info-section open" id="cleatCard">
+      <button class="info-toggle" onclick="this.closest('.info-section').classList.toggle('open')">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span>👟</span>
+          <span style="font-size:0.88rem;font-weight:700;color:var(--t1);">클릿슈즈 피팅 가이드</span>
+          <span style="font-size:0.74rem;color:var(--t3);">신발 ${shoe}mm · ${posLabel} 기준</span>
+        </div>
+        <span class="info-chevron" style="transform:rotate(180deg);">▾</span>
+      </button>
+      <div class="info-body" style="display:block;">
+        <div class="cleat-grid">
+          ${items.map(it=>`<div class="cleat-item">
+            <div class="cleat-item-title"><span>${it.icon}</span>${it.title}</div>
+            <div class="cleat-item-val">${it.val}</div>
+            <div class="cleat-item-desc">${it.desc}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderSymptom() {
+  const symptoms = [
+    {icon:'🦵', name:'무릎 앞쪽(전방) 통증', cause:'안장이 낮거나 클릿이 앞에 위치',
+     adj:['안장 높이 3~5mm 올리기','클릿 3~5mm 뒤로 이동','세트백 소폭 늘리기','Float 큰 클릿으로 교체 (6° 이상)']},
+    {icon:'🦵', name:'무릎 뒤쪽(후방) 통증', cause:'안장이 높거나 세트백이 과도',
+     adj:['안장 높이 3~5mm 낮추기','안장을 앞으로 이동 (세트백 감소)','크랭크암 길이 재검토']},
+    {icon:'🦵', name:'무릎 내측 통증', cause:'클릿 각도·Q-factor 문제',
+     adj:['클릿을 toe-out 방향으로 조정','클릿을 신발 바깥쪽으로 이동 (Q-factor ↑)','Float 큰 클릿으로 교체','고관절 운동 병행']},
+    {icon:'🦵', name:'무릎 외측(IT밴드) 통증', cause:'클릿 내전 또는 Q-factor 과소',
+     adj:['클릿을 toe-in 방향으로 조정','클릿을 신발 안쪽으로 이동 (Q-factor ↓)','안장 소폭 낮추기']},
+    {icon:'🪑', name:'회음부·엉덩이 통증', cause:'안장 높이·각도·폭 부적합',
+     adj:['안장 코 1~2° 아래로 기울이기','안장 높이 3mm 낮추기','좌골 넓이 재측정 후 안장 폭 교체','라이딩 팬츠 패드 확인']},
+    {icon:'🔙', name:'허리 통증', cause:'핸들이 너무 낮거나 리치 과다',
+     adj:['스페이서 추가로 핸들 높이 올리기','스템 10~20mm 짧은 것으로 교체','코어 근력 강화 병행']},
+    {icon:'💪', name:'목·어깨·승모근 통증', cause:'핸들 너무 낮고 앞쏠림 과도',
+     adj:['핸들 높이 10~15mm 올리기','스템 길이 줄이기','라이딩 중 팔꿈치 자연스럽게 구부리기','상체 스트레칭 병행']},
+    {icon:'🖐', name:'손목·손 저림·통증', cause:'핸들에 체중이 집중됨',
+     adj:['핸들 높이 올려 상체 하중 분산','팔꿈치를 약간 구부려 충격 흡수','글러브 또는 핸들 테이핑 추가']},
+    {icon:'🦶', name:'발 앞부분 저림·통증', cause:'클릿 위치 전방, 신발 폭 좁음',
+     adj:['클릿 3~5mm 뒤로 이동','신발 발볼 부분 여유 확인','버클·BOA 조임 강도 줄이기','인솔 교체 고려']},
+    {icon:'🦶', name:'발뒤꿈치·아킬레스 통증', cause:'안장이 낮거나 발목 각도 과도',
+     adj:['안장 3~5mm 올리기','클릿 2~3mm 앞으로 이동','페달링 시 발꿈치 과하게 내리지 않도록 의식']},
+  ];
+
+  G('symptomWrap').innerHTML = `
+    <div class="info-section" id="symptomCard">
+      <button class="info-toggle" onclick="this.closest('.info-section').classList.toggle('open')">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span>💊</span>
+          <span style="font-size:0.88rem;font-weight:700;color:var(--t1);">증상별 조정 가이드</span>
+          <span style="font-size:0.74rem;color:var(--t3);">— 불편·통증 부위별 피팅 수정 방법</span>
+        </div>
+        <span class="info-chevron">▾</span>
+      </button>
+      <div class="info-body">
+        <p style="font-size:0.73rem;color:var(--t3);margin-bottom:12px;">※ 조정은 한 번에 하나씩, 3~5mm 단위로 시작하세요. 증상이 지속되면 전문 피터 또는 정형외과 상담 권장.</p>
+        <div class="symptom-list">
+          ${symptoms.map(s=>`<div class="symptom-item">
+            <div class="symptom-head">
+              <div class="symptom-name">${s.icon} ${s.name}</div>
+              <div class="symptom-cause">원인: ${s.cause}</div>
+            </div>
+            ${s.adj.map(a=>`<div class="symptom-adj-item">${a}</div>`).join('')}
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ══ 3D VISUALIZATION (Three.js) ══ */
+let _three = null;
+function disposeThree() {
+  if (!_three) return;
+  cancelAnimationFrame(_three.rafId);
+  _three.scene.traverse(o => {
+    if (o.geometry) o.geometry.dispose();
+    if (o.material) { (Array.isArray(o.material) ? o.material : [o.material]).forEach(mt => mt.dispose()); }
+  });
+  _three.renderer.dispose();
+  _three = null;
+}
+function drawBike(m, fit) {
+  const wrap = G('svgWrap');
+  wrap.innerHTML = '';
+  disposeThree();
+  const W = Math.min(wrap.clientWidth || 860, 860), H = 520;
+
+  // ── Scene & Renderer ──
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xE8EEF8);
+  scene.fog = new THREE.FogExp2(0xE8EEF8, 0.003);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(W, H);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.domElement.style.cssText = 'border-radius:10px;display:block;cursor:grab;width:100%;';
+  wrap.style.position = 'relative';
+  wrap.appendChild(renderer.domElement);
+
+  // 수치 표시용 2D 오버레이 캔버스
+  const annotCanvas = document.createElement('canvas');
+  annotCanvas.width = W; annotCanvas.height = H;
+  annotCanvas.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;width:100%;height:100%;border-radius:10px;';
+  wrap.appendChild(annotCanvas);
+  const annotCtx = annotCanvas.getContext('2d');
+
+  const hint = document.createElement('div');
+  hint.style.cssText = 'text-align:center;font-size:0.7rem;color:#9CA3AF;margin-top:6px;';
+  hint.textContent = '🖱 드래그: 회전  |  스크롤: 확대/축소  |  우클릭: 이동  |  정면에서 수치 표시';
+  wrap.appendChild(hint);
+
+  // ── Camera ──
+  const camera = new THREE.PerspectiveCamera(38, W / H, 0.1, 1200);
+  camera.position.set(85, 95, 160);
+  camera.lookAt(50, 52, 0);
+
+  // ── Lights ──
+  scene.add(new THREE.AmbientLight(0xffffff, 0.30));
+  scene.add(new THREE.HemisphereLight(0xC8DCF8, 0xA8B8C0, 0.55));
+  const sun = new THREE.DirectionalLight(0xFFF9F0, 1.15);
+  sun.position.set(70, 220, 130);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(4096, 4096);
+  sun.shadow.camera.left = -180; sun.shadow.camera.right = 220;
+  sun.shadow.camera.top = 180;  sun.shadow.camera.bottom = -30;
+  sun.shadow.camera.near = 5;   sun.shadow.camera.far = 700;
+  scene.add(sun);
+  const fill = new THREE.DirectionalLight(0xC4D8FF, 0.38);
+  fill.position.set(-90, 70, -110); scene.add(fill);
+  const back = new THREE.DirectionalLight(0xFFE8C8, 0.22);
+  back.position.set(20, 40, -150); scene.add(back);
+
+  // ── OrbitControls ──
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.target.set(50, 52, 0);
+  controls.enableDamping = true; controls.dampingFactor = 0.06;
+  controls.maxPolarAngle = Math.PI * 0.76;
+  controls.minDistance = 60; controls.maxDistance = 400;
+  controls.update();
+
+  // ── Ground ──
+  const gMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(800, 600),
+    new THREE.MeshStandardMaterial({ color: 0xCDD8EC, roughness: 0.9, metalness: 0 })
+  );
+  gMesh.rotation.x = -Math.PI / 2; gMesh.receiveShadow = true; scene.add(gMesh);
+  // Road lane lines
+  for (let i = -4; i <= 4; i++) {
+    const lane = new THREE.Mesh(
+      new THREE.PlaneGeometry(300, 0.6),
+      new THREE.MeshStandardMaterial({ color: 0xB8C8E0, roughness: 1 })
+    );
+    lane.rotation.x = -Math.PI / 2; lane.position.set(50, 0.02, i * 35); scene.add(lane);
+  }
+
+  // ── Helper closures ──
+  const mat = (hex, metal = 0.08, rough = 0.58) =>
+    new THREE.MeshStandardMaterial({ color: hex, metalness: metal, roughness: rough });
+  const v3 = (x, y, z) => new THREE.Vector3(x, y, z);
+
+  // 마커 전용 그룹 (clearMarkers로 전체 재생성 가능)
+  const markerGroup = new THREE.Group();
+  scene.add(markerGroup);
+
+  function clearMarkers() {
+    for (let i = markerGroup.children.length - 1; i >= 0; i--) {
+      const obj = markerGroup.children[i];
+      if (obj.geometry) obj.geometry.dispose();
+      [].concat(obj.material || []).forEach(m => m.dispose());
+      markerGroup.remove(obj);
+    }
+  }
+
+  function addTube(p1, p2, r, material) {
+    const dir = new THREE.Vector3().subVectors(p2, p1);
+    const len = dir.length();
+    if (len < 0.05) return;
+    const mesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 14), material);
+    mesh.position.lerpVectors(p1, p2, 0.5);
+    const up = new THREE.Vector3(0, 1, 0);
+    const nd = dir.clone().normalize();
+    if (Math.abs(up.dot(nd)) < 0.9999) mesh.quaternion.setFromUnitVectors(up, nd);
+    else if (nd.y < 0) mesh.rotateX(Math.PI);
+    mesh.castShadow = true; mesh.receiveShadow = true; markerGroup.add(mesh);
+  }
+  function addBall(pos, r, material) {
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(r, 18, 14), material);
+    mesh.position.copy(pos); mesh.castShadow = true; markerGroup.add(mesh);
+  }
+
+  // ── 핵심 위치 좌표 (단위: cm) ──
+  const WR = 33.5, BB_H = 27, CS = 41, WB = 99;
+  const rear = v3(0, WR, 0);
+  const front = v3(WB, WR, 0);
+  const bb    = v3(CS, BB_H, 0);
+  const sd    = v3(bb.x - fit.setback, fit.saddleFromGround, 0);
+  const bar   = v3(bb.x - fit.setback + fit.reach, fit.handlebarHeight, 0);
+
+  const hw         = fit.handlebarWidth / 2;
+  const crankCm    = fit.crankLength / 10;
+  const crankAngle = 135 * Math.PI / 180;
+  const pedalR     = v3(bb.x + crankCm * Math.sin(crankAngle), bb.y - crankCm * Math.cos(crankAngle), 0);
+
+  // ── 3D 피팅 포인트 마커 + 참조선 ──
+  function addMarkers() {
+    clearMarkers();
+    const em = (hex, emx) => new THREE.MeshStandardMaterial({color:hex, emissive:emx, roughness:0.25, metalness:0.1});
+    const tr = (hex) => new THREE.MeshStandardMaterial({color:hex, transparent:true, opacity:0.30, roughness:0.9});
+    // 주요 피팅 포인트 발광 구 (sd.y, bar.y, bb.y 는 GLB 실측 위치로 갱신됨)
+    addBall(v3(sd.x, sd.y, 0),   2.4, em(0xEF4444, 0x7F1D1D));  // 안장 (빨강)
+    addBall(v3(bar.x, bar.y, 0), 2.4, em(0x3B82F6, 0x1E3A8A));  // 핸들 (파랑)
+    addBall(bb, 2.2, em(0x10B981, 0x064E3B));                     // BB   (초록)
+    addBall(pedalR, 1.8, em(0xA78BFA, 0x4C1D95));                 // 페달 (보라)
+    // 반투명 3D 참조선
+    addTube(v3(sd.x, 0.4, 0), v3(sd.x, sd.y, 0),   0.30, tr(0xEF4444));          // 안장 수직
+    addTube(v3(bar.x, 0.4, 0), v3(bar.x, bar.y, 0), 0.30, tr(0x3B82F6));         // 핸들 수직
+    addTube(v3(sd.x, sd.y, 0), v3(bar.x, sd.y, 0),  0.22, tr(0xA855F7));         // 리치 수평
+    addTube(v3(bb.x, bb.y + 6, 0), v3(sd.x, bb.y + 6, 0), 0.22, tr(0x06B6D4));  // 세트백
+    addTube(v3(bb.x, 0.4, 0), bb, 0.22, tr(0x10B981));                            // BB 높이
+  }
+
+  // ── GLB 바이크 모델 로드 ──
+  const loader = new THREE.GLTFLoader();
+  const loadDiv = document.createElement('div');
+  loadDiv.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,.92);color:#3B6EF8;font-weight:700;font-size:.88rem;padding:10px 18px;border-radius:8px;pointer-events:none;';
+  loadDiv.textContent = '🚴 3D 모델 로딩 중...';
+  wrap.appendChild(loadDiv);
+
+  loader.load('./road_bike.glb',
+    (gltf) => {
+      loadDiv.remove();
+      const bike = gltf.scene;
+      bike.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+      const b0 = new THREE.Box3().setFromObject(bike); const s0 = new THREE.Vector3(); b0.getSize(s0);
+      if (s0.z > s0.x) bike.rotation.y = Math.PI / 2;
+      const b1 = new THREE.Box3().setFromObject(bike); const s1 = new THREE.Vector3(); b1.getSize(s1);
+      bike.scale.setScalar(WB / s1.x);
+      const b2 = new THREE.Box3().setFromObject(bike); const c2 = new THREE.Vector3(); b2.getCenter(c2);
+      bike.position.set(WB / 2 - c2.x, -b2.min.y, -c2.z);
+      scene.add(bike);
+
+      // ── GLB 실측 부품 위치 감지 ──
+      // 스케일/위치 반영 후 각 메시의 월드 좌표 바운딩박스를 스캔해
+      // 실제 안장·핸들·BB 위치를 찾아 sd/bar/bb를 업데이트한다.
+      bike.updateMatrixWorld(true);
+      const meshInfos = [];
+      bike.traverse(node => {
+        if (!node.isMesh) return;
+        const box = new THREE.Box3().setFromObject(node);
+        if (box.isEmpty()) return;
+        const sz = new THREE.Vector3(), ct = new THREE.Vector3();
+        box.getSize(sz); box.getCenter(ct);
+        meshInfos.push({ box, sz, ct });
+      });
+
+      if (meshInfos.length > 0) {
+        // 휠 메시 제외: WB=99 스케일에서 직경 ~67cm → X·Y 모두 40 이상인 것
+        const nonWheel = meshInfos.filter(m => !(m.sz.y > 40 && m.sz.x > 40));
+
+        // 안장: 후방 구간(x 10~55)에서 최고점 메시
+        const rearMeshes = nonWheel.filter(m => m.ct.x > 10 && m.ct.x < 55);
+        if (rearMeshes.length > 0) {
+          const best = rearMeshes.reduce((a, b) => b.box.max.y > a.box.max.y ? b : a);
+          sd.y = best.box.max.y;
+        }
+
+        // 핸들: 전방 구간(x 58~92)에서 최고점 메시
+        const frontMeshes = nonWheel.filter(m => m.ct.x > 58 && m.ct.x < 92);
+        if (frontMeshes.length > 0) {
+          const best = frontMeshes.reduce((a, b) => b.box.max.y > a.box.max.y ? b : a);
+          bar.y = best.box.max.y;
+        }
+
+        // BB: 계산 예상위치(CS=41, BB_H=27) ±8cm 이내 메시만 허용
+        // (범위 밖이면 계산값 유지 → 연쇄 오류 방지)
+        const crankArea = meshInfos.filter(m =>
+          m.ct.x > CS - 10 && m.ct.x < CS + 10 &&
+          m.ct.y > 15      && m.ct.y < 38
+        );
+        if (crankArea.length > 0) {
+          const bbBest = crankArea.reduce((a, b) =>
+            Math.hypot(b.ct.x - CS, b.ct.y - BB_H) < Math.hypot(a.ct.x - CS, a.ct.y - BB_H) ? b : a
+          );
+          if (Math.hypot(bbBest.ct.x - CS, bbBest.ct.y - BB_H) < 8) {
+            bb.x = bbBest.ct.x; bb.y = bbBest.ct.y;
+            sd.x = bb.x - fit.setback;
+            bar.x = sd.x + fit.reach;
+          }
+        }
+      }
+
+      // ── 시각적 위치 보정 (사용자 측정 오프셋) ──
+      sd.x  -= 1.5;   // 안장 마커: 실제보다 1.5cm 오른쪽 → 왼쪽으로 보정
+      bar.x -= 3.0;   // 핸들 마커: 실제보다 3cm 오른쪽   → 왼쪽으로 보정
+      bb.y  -= 3.0;   // BB 마커:   실제보다 3cm 위        → 아래로 보정
+      // BB x는 0.2mm 오차로 무시
+      pedalR.x = bb.x + crankCm * Math.sin(crankAngle);
+      pedalR.y = bb.y - crankCm * Math.cos(crankAngle);
+
+      addMarkers();
+
+      // ── 마커 위치 직접 조정 UI ──
+      const raycaster = new THREE.Raycaster();
+      const mouse2d   = new THREE.Vector2();
+      let adjTarget   = null; // 'saddle' | 'bb' | 'handlebar'
+
+      const btnStyle = (color) =>
+        `display:block;width:100%;padding:6px 10px;margin-bottom:6px;border:2px solid ${color};` +
+        `border-radius:6px;background:#fff;color:${color};font-family:inherit;font-size:.8rem;` +
+        `font-weight:700;cursor:pointer;text-align:left;transition:background .15s;`;
+
+      const panel = document.createElement('div');
+      panel.style.cssText =
+        'position:absolute;top:10px;right:10px;background:rgba(255,255,255,.97);' +
+        'border-radius:10px;padding:13px;display:none;width:176px;' +
+        'box-shadow:0 4px 18px rgba(0,0,0,.18);font-family:inherit;z-index:10;';
+      panel.innerHTML = `
+        <div style="font-weight:700;font-size:.82rem;color:#111;margin-bottom:10px;">📍 마커 위치 조정</div>
+        <button id="_adjSd" style="${btnStyle('#DC2626')}">🔴 안장 위치 설정</button>
+        <button id="_adjBb" style="${btnStyle('#10B981')}">🟢 BB 위치 설정</button>
+        <button id="_adjBr" style="${btnStyle('#3B82F6')}">🔵 핸들 위치 설정</button>
+        <div id="_adjHint" style="font-size:.71rem;color:#6B7280;margin:8px 0;line-height:1.4;">
+          부품을 선택 후<br>자전거 해당 위치를 클릭
+        </div>
+        <button id="_adjDone" style="width:100%;padding:7px;border:none;border-radius:6px;background:#3B6EF8;color:#fff;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;">✓ 완료</button>`;
+      wrap.appendChild(panel);
+
+      const toggleBtn = document.createElement('button');
+      toggleBtn.textContent = '📍 위치 조정';
+      toggleBtn.style.cssText =
+        'position:absolute;top:10px;left:10px;background:rgba(255,255,255,.92);' +
+        'border:1px solid #CBD5E0;border-radius:6px;padding:5px 11px;' +
+        'font-family:inherit;font-size:.75rem;font-weight:600;cursor:pointer;z-index:10;';
+      wrap.appendChild(toggleBtn);
+
+      const hint = panel.querySelector('#_adjHint');
+
+      function setAdjTarget(t, color, text) {
+        adjTarget = t;
+        hint.innerHTML = `<span style="color:${color};font-weight:700;">${text}</span><br>클릭하면 위치가 이동합니다`;
+        renderer.domElement.style.cursor = 'crosshair';
+      }
+
+      panel.querySelector('#_adjSd').addEventListener('click',
+        () => setAdjTarget('saddle',    '#DC2626', '🔴 안장 중심을 클릭'));
+      panel.querySelector('#_adjBb').addEventListener('click',
+        () => setAdjTarget('bb',        '#10B981', '🟢 BB(크랭크 중심)를 클릭'));
+      panel.querySelector('#_adjBr').addEventListener('click',
+        () => setAdjTarget('handlebar', '#3B82F6', '🔵 핸들 중심을 클릭'));
+
+      toggleBtn.addEventListener('click', () => {
+        const open = panel.style.display === 'none';
+        panel.style.display = open ? 'block' : 'none';
+        toggleBtn.style.background = open ? '#3B6EF8' : 'rgba(255,255,255,.92)';
+        toggleBtn.style.color      = open ? '#fff'    : '';
+        if (!open) { adjTarget = null; renderer.domElement.style.cursor = 'grab'; }
+      });
+
+      panel.querySelector('#_adjDone').addEventListener('click', () => {
+        panel.style.display = 'none';
+        toggleBtn.style.background = 'rgba(255,255,255,.92)';
+        toggleBtn.style.color = '';
+        adjTarget = null;
+        renderer.domElement.style.cursor = 'grab';
+        hint.innerHTML = '부품을 선택 후<br>자전거 해당 위치를 클릭';
+      });
+
+      // 클릭 vs 드래그 구분 (짧은 클릭만 마커 이동)
+      let mdTime = 0, mdPos = {x:0, y:0};
+      renderer.domElement.addEventListener('mousedown', e => {
+        mdTime = Date.now(); mdPos = {x:e.clientX, y:e.clientY};
+      });
+      renderer.domElement.addEventListener('mouseup', e => {
+        if (!adjTarget) return;
+        if (Date.now() - mdTime > 300) return;           // 드래그 무시
+        if (Math.hypot(e.clientX-mdPos.x, e.clientY-mdPos.y) > 6) return;
+
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse2d.x =  ((e.clientX - rect.left) / rect.width)  * 2 - 1;
+        mouse2d.y = -((e.clientY - rect.top)  / rect.height) * 2 + 1;
+        raycaster.setFromCamera(mouse2d, camera);
+        const hits = raycaster.intersectObjects(bike.children, true);
+        if (!hits.length) return;
+
+        const pt = hits[0].point;
+        if (adjTarget === 'saddle') {
+          sd.x = pt.x; sd.y = pt.y;
+        } else if (adjTarget === 'bb') {
+          bb.x = pt.x; bb.y = pt.y;
+          pedalR.x = bb.x + crankCm * Math.sin(crankAngle);
+          pedalR.y = bb.y - crankCm * Math.cos(crankAngle);
+        } else if (adjTarget === 'handlebar') {
+          bar.x = pt.x; bar.y = pt.y;
+        }
+        addMarkers();
+        hint.innerHTML = '✅ 위치 저장됨<br>다음 부품을 선택하거나 완료';
+      });
+    },
+    undefined,
+    (err) => {
+      console.error('GLB load error', err);
+      loadDiv.textContent = '⚠ 모델 로드 실패';
+      setTimeout(() => loadDiv.remove(), 3000);
+      addMarkers();
+    }
+  );
+
+
+  // ── 수치 오버레이 ──
+  function drawAnnotations() {
+    if (!annotCtx) return;
+    annotCtx.clearRect(0, 0, W, H);
+    const camVec = new THREE.Vector3().subVectors(camera.position, controls.target).normalize();
+    const hLen = Math.sqrt(camVec.x * camVec.x + camVec.z * camVec.z) + 0.001;
+    if (Math.abs(camVec.z) / hLen < 0.36) return;
+
+    function proj(x, y, z) {
+      const v = new THREE.Vector3(x, y, z).project(camera);
+      return { x:(v.x+1)*W/2, y:(-v.y+1)*H/2 };
+    }
+
+    function dimLine(pa, pb, label, color, offDir, offPx) {
+      offDir = offDir !== undefined ? offDir : -1;
+      offPx  = offPx  !== undefined ? offPx  : 30;
+      const dx=pb.x-pa.x, dy=pb.y-pa.y, len=Math.sqrt(dx*dx+dy*dy);
+      if (len < 5) return;
+      const nx=(-dy/len)*offDir, ny=(dx/len)*offDir;
+      const ox=nx*offPx, oy=ny*offPx;
+      annotCtx.save();
+      annotCtx.strokeStyle=color; annotCtx.fillStyle=color;
+      // 연장선
+      annotCtx.lineWidth=1.2; annotCtx.setLineDash([]);
+      for (const [px,py] of [[pa.x,pa.y],[pb.x,pb.y]]) {
+        annotCtx.beginPath(); annotCtx.moveTo(px,py); annotCtx.lineTo(px+ox,py+oy); annotCtx.stroke();
+      }
+      // 치수선
+      annotCtx.lineWidth=2.0; annotCtx.setLineDash([6,3]);
+      annotCtx.beginPath(); annotCtx.moveTo(pa.x+ox,pa.y+oy); annotCtx.lineTo(pb.x+ox,pb.y+oy); annotCtx.stroke();
+      annotCtx.setLineDash([]);
+      // 화살표
+      for (const [fx,fy,tx,ty] of [[pa.x+ox,pa.y+oy,pb.x+ox,pb.y+oy],[pb.x+ox,pb.y+oy,pa.x+ox,pa.y+oy]]) {
+        const ddx=tx-fx,ddy=ty-fy,dl=Math.sqrt(ddx*ddx+ddy*ddy);
+        if(dl<1) continue;
+        const ax=fx+(ddx/dl)*9,ay=fy+(ddy/dl)*9;
+        annotCtx.beginPath(); annotCtx.moveTo(fx,fy);
+        annotCtx.lineTo(ax+(ddy/dl)*4,ay-(ddx/dl)*4);
+        annotCtx.lineTo(ax-(ddy/dl)*4,ay+(ddx/dl)*4);
+        annotCtx.closePath(); annotCtx.fill();
+      }
+      // 라벨 배경 pill
+      const mx=(pa.x+pb.x)/2+ox, my=(pa.y+pb.y)/2+oy;
+      annotCtx.font='bold 12px Inter,sans-serif';
+      const tw=annotCtx.measureText(label).width, pad=5;
+      annotCtx.fillStyle='rgba(255,255,255,0.95)';
+      annotCtx.strokeStyle=color; annotCtx.lineWidth=1.5;
+      if(annotCtx.roundRect) {
+        annotCtx.beginPath(); annotCtx.roundRect(mx-tw/2-pad,my-9,tw+pad*2,18,4); annotCtx.fill(); annotCtx.stroke();
+      } else {
+        annotCtx.fillRect(mx-tw/2-pad,my-9,tw+pad*2,18);
+        annotCtx.strokeRect(mx-tw/2-pad,my-9,tw+pad*2,18);
+      }
+      annotCtx.fillStyle=color; annotCtx.textAlign='center'; annotCtx.textBaseline='middle';
+      annotCtx.fillText(label,mx,my);
+      annotCtx.restore();
+    }
+
+    function dotLabel(x,y,z,label,color) {
+      const p=proj(x,y,z);
+      annotCtx.save();
+      annotCtx.fillStyle=color;
+      annotCtx.beginPath(); annotCtx.arc(p.x,p.y,6,0,Math.PI*2); annotCtx.fill();
+      annotCtx.strokeStyle='#fff'; annotCtx.lineWidth=1.5; annotCtx.stroke();
+      annotCtx.font='bold 10px Inter,sans-serif';
+      annotCtx.fillStyle='#fff'; annotCtx.textAlign='center'; annotCtx.textBaseline='middle';
+      annotCtx.fillText('●',p.x,p.y);
+      // 화면 우측(65% 이상)이면 텍스트를 왼쪽에, 아니면 오른쪽에
+      annotCtx.font='bold 11px Inter,sans-serif';
+      const lw=annotCtx.measureText(label).width+8;
+      const goLeft = p.x > W*0.65;
+      const tx = goLeft ? p.x-9-lw : p.x+9;
+      annotCtx.fillStyle='rgba(255,255,255,0.92)';
+      annotCtx.fillRect(tx, p.y-8, lw, 16);
+      annotCtx.fillStyle=color;
+      annotCtx.textAlign= goLeft ? 'right' : 'left';
+      annotCtx.fillText(label, goLeft ? p.x-11 : p.x+13, p.y);
+      annotCtx.restore();
+    }
+
+    const C = {
+      saddle:'#DC2626', bar:'#2563EB', reach:'#7C3AED',
+      drop:'#D97706', setbk:'#0891B2', crank:'#9333EA',
+      bb:'#059669', bbsad:'#B45309', hw:'#0D9488'
+    };
+
+    // ※ offDir 규칙:
+    //   • 위쪽 방향 선(지면→높이): offDir=1 → 오른쪽, offDir=-1 → 왼쪽
+    //   • 아래쪽 방향 선(높이→지면): offDir=-1 → 오른쪽, offDir=1 → 왼쪽
+    //   • 오른쪽 방향 선(수평):  offDir=-1 → 위, offDir=1 → 아래
+    //   • 왼쪽 방향 선(수평):   offDir=1 → 위, offDir=-1 → 아래
+
+    // ── 좌측 컬럼: 안장·BB 높이 ──
+    // 1. 안장높이 (↑ upward → offDir=-1 = LEFT)
+    dimLine(proj(sd.x, 0.5, 0), proj(sd.x, sd.y, 0),
+            `안장높이 ${fit.saddleFromGround}cm`, C.saddle, -1, 90);
+    // 2. BB높이 (↑ upward → offDir=-1 = LEFT, bb.x 기준)
+    dimLine(proj(bb.x, 0.5, 0), proj(bb.x, bb.y, 0),
+            `BB높이 ${BB_H}cm`, C.bb, -1, 56);
+
+    // ── 중간: BB-안장 거리 ──
+    // 3. BB-안장 (↑ upward from bb.y to sd.y, at sd.x+4 → offDir=1 = RIGHT)
+    dimLine(proj(sd.x + 4, bb.y, 0), proj(sd.x + 4, sd.y, 0),
+            `BB-안장 ${fit.saddleFromBB}cm`, C.bbsad, 1, 22);
+
+    // ── 우측 컬럼: 핸들높이·드롭 ──
+    // 4. 핸들높이 (↑ upward → offDir=1 = RIGHT, 58px)
+    dimLine(proj(bar.x, 0.5, 0), proj(bar.x, bar.y, 0),
+            `핸들높이 ${fit.handlebarHeight}cm`, C.bar, 1, 58);
+    // 5. 드롭: sd.y(안장높이) → bar.y(핸들높이) = 위→아래 방향(↓ downward)
+    //    downward → offDir=-1 = RIGHT, 88px (핸들높이 58px보다 더 오른쪽)
+    dimLine(proj(bar.x, sd.y, 0), proj(bar.x, bar.y, 0),
+            `드롭 ${fit.saddleDrop}cm`, C.drop, -1, 88);
+
+    // ── 수평: 리치·세트백 ──
+    // 6. 리치: 안장X→핸들X, 높이 = BB와 안장 중간 (→ rightward → offDir=-1 = UP)
+    const reachY = bb.y + (sd.y - bb.y) * 0.48;
+    dimLine(proj(sd.x, reachY, 0), proj(bar.x, reachY, 0),
+            `리치 ${fit.reach}cm`, C.reach, -1, 26);
+    // 7. 세트백: bb.x→sd.x (← leftward → offDir=1 = UP)
+    dimLine(proj(bb.x, bb.y + 7, 0), proj(sd.x, bb.y + 7, 0),
+            `세트백 ${fit.setback}cm`, C.setbk, 1, 18);
+
+    // ── 크랭크암 수치 (화살표 없이 페달 옆 콜아웃) ──
+    {
+      const pp = proj(pedalR.x, pedalR.y, 0);
+      const label = `크랭크암 ${fit.crankLength}mm`;
+      annotCtx.save();
+      annotCtx.font = 'bold 11.5px Inter,sans-serif';
+      const lw2 = annotCtx.measureText(label).width + 10;
+      const ly2 = annotCanvas.height - 16;
+      const lx2 = pp.x - lw2 / 2;
+      annotCtx.fillStyle = 'rgba(255,255,255,0.95)';
+      annotCtx.strokeStyle = C.crank; annotCtx.lineWidth = 1.5;
+      if(annotCtx.roundRect){
+        annotCtx.beginPath(); annotCtx.roundRect(lx2, ly2-9, lw2, 18, 4);
+        annotCtx.fill(); annotCtx.stroke();
+      } else {
+        annotCtx.fillRect(lx2, ly2-9, lw2, 18);
+        annotCtx.strokeRect(lx2, ly2-9, lw2, 18);
+      }
+      annotCtx.fillStyle = C.crank; annotCtx.textAlign = 'center';
+      annotCtx.textBaseline = 'middle';
+      annotCtx.fillText(label, lx2 + lw2/2, ly2);
+      annotCtx.restore();
+    }
+
+    // ── 핸들 넓이 콜아웃 (드롭·핸들높이와 겹치지 않도록 핸들 위 왼쪽) ──
+    {
+      const ph  = proj(bar.x - 10, bar.y + 4, 0);
+      const label = `핸들넓이 ${fit.handlebarWidth}cm`;
+      const ty  = ph.y - 46;
+      annotCtx.save();
+      annotCtx.font = 'bold 11.5px Inter,sans-serif';
+      const lw2 = annotCtx.measureText(label).width + 10;
+      const lx2 = ph.x - lw2 / 2;
+      annotCtx.strokeStyle = C.hw; annotCtx.lineWidth = 1.2; annotCtx.setLineDash([3,2]);
+      annotCtx.beginPath(); annotCtx.moveTo(ph.x, ph.y); annotCtx.lineTo(ph.x, ty + 9); annotCtx.stroke();
+      annotCtx.setLineDash([]);
+      annotCtx.fillStyle = 'rgba(255,255,255,0.95)'; annotCtx.strokeStyle = C.hw; annotCtx.lineWidth = 1.5;
+      if(annotCtx.roundRect){
+        annotCtx.beginPath(); annotCtx.roundRect(lx2, ty-9, lw2, 18, 4); annotCtx.fill(); annotCtx.stroke();
+      } else {
+        annotCtx.fillRect(lx2, ty-9, lw2, 18); annotCtx.strokeRect(lx2, ty-9, lw2, 18);
+      }
+      annotCtx.fillStyle = C.hw; annotCtx.textAlign = 'center'; annotCtx.textBaseline = 'middle';
+      annotCtx.fillText(label, ph.x, ty);
+      annotCtx.restore();
+    }
+
+    // ── 포인트 레이블 ──
+    dotLabel(sd.x,  sd.y,  0, '안장', C.saddle);
+    dotLabel(bar.x, bar.y, 0, '핸들', C.bar);
+    dotLabel(bb.x,  bb.y,  0, 'BB',   C.bb);
+    dotLabel(pedalR.x, pedalR.y, 0, '페달', C.crank);
+  }
+
+  // ── Animate ──
+  let rafId;
+  (function animate() {
+    rafId = requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+    drawAnnotations();
+  })();
+  _three = { rafId, renderer, scene };
+
+  // Update section title
+  const titleEl = wrap.previousElementSibling;
+  if (titleEl) titleEl.textContent = '🚴 3D 자전거 피팅 시각화 — 드래그하여 회전';
+
+  // Legend
+  G('vizLeg').innerHTML = [
+    ['#DC2626', `안장높이 ${fit.saddleFromGround}cm`],
+    ['#2563EB', `핸들높이 ${fit.handlebarHeight}cm`],
+    ['#D97706', `드롭 ${fit.saddleDrop}cm`],
+    ['#7C3AED', `리치 ${fit.reach}cm`],
+    ['#0891B2', `세트백 ${fit.setback}cm`],
+    ['#9333EA', `크랭크암 ${fit.crankLength}mm`],
+    ['#059669', `BB높이 ${fit.BB}cm`],
+    ['#B45309', `BB-안장 ${fit.saddleFromBB}cm`],
+    ['#0D9488', `안장넓이 ${fit.saddleWidth}mm`],
+    ['#DB2777', `핸들넓이 ${fit.handlebarWidth}cm`],
+  ].map(([c, l]) => `<div class="vleg"><div class="vdot" style="background:${c}"></div>${l}</div>`).join('');
+}
+</script>
+</body>
+</html>
